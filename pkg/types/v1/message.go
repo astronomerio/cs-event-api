@@ -1,0 +1,83 @@
+package v1
+
+import (
+	"encoding/json"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	uuid "github.com/satori/go.uuid"
+)
+
+type Message struct {
+	Type         string                 `json:"type,omitempty"`
+	MessageID    string                 `json:"messageId,omitempty"`
+	Context      map[string]interface{} `json:"context,omitempty"`
+	Timestamp    time.Time              `json:"timestamp,omitempty"`
+	SentAt       time.Time              `json:"sentAt,omitempty"`
+	ReceivedAt   time.Time              `json:"receivedAt,omitempty"`
+	AppID        string                 `json:"appId,oimtempty"`
+	WriteKey     string                 `json:"writeKey,omitempty"`
+	Integrations map[string]interface{} `json:"integrations,omitempty"`
+	Traits       map[string]interface{} `json:"traits,omitempty"`
+	Properties   map[string]interface{} `json:"properties,omitempty"`
+	AnonymousID  string                 `json:"anonymousId,omitempty"`
+	UserID       string                 `json:"userId,omitempty"`
+	GroupID      string                 `json:"groupId,omitempty"`
+	PreviousID   string                 `json:"previousId,omitempty"`
+	Category     string                 `json:"category,omitempty"`
+	Name         string                 `json:"name,omitempty"`
+	Action       string                 `json:"action,omitempty"`
+	Channel      string                 `json:"channel,omitempty"`
+	Event        string                 `json:"event,omitempty"`
+	Version      string                 `json:"version,omitempty"`
+}
+
+func (m *Message) String() string {
+	b, err := json.Marshal(m)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
+func (m *Message) IsValid() bool {
+	valid := true
+
+	if m.AppID == "" {
+		valid = false
+	}
+
+	return valid
+}
+
+func (m *Message) BindRequest(c *gin.Context) {
+	md := GetRequestMetadata(c)
+	m.ApplyMetadata(md)
+}
+
+func (m *Message) ApplyMetadata(metadata RequestMetadata) {
+	m.Context["ip"] = metadata.IP
+
+	if metadata.AppID != "" && m.AppID == "" {
+		m.AppID = metadata.AppID
+	}
+}
+
+// MaybeFix will add fields that should be present if they aren't
+func (m *Message) MaybeFix() {
+	if m.MessageID == "" {
+		m.MessageID = uuid.NewV4().String()
+	}
+
+	if m.SentAt.IsZero() {
+		m.SentAt = time.Now()
+	}
+
+	if m.Timestamp.IsZero() {
+		m.Timestamp = time.Now()
+	}
+}
+
+func (m *Message) PartitionKey() string {
+	return m.MessageID
+}
