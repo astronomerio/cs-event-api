@@ -30,11 +30,11 @@ func NewKafkaIngestionHandler() *KafkaIngestionHandler {
 	return &h
 }
 
-func (h *KafkaIngestionHandler) ProcessMessage(r, partition string) {
+func (h *KafkaIngestionHandler) ProcessMessage(message, partition string) {
 	_, _, err := h.producer.SendMessage(&sarama.ProducerMessage{
 		Topic: h.topic,
 		Key:   sarama.StringEncoder(partition),
-		Value: sarama.StringEncoder(partition),
+		Value: sarama.StringEncoder(message),
 	})
 	if err != nil {
 		log.Println(err)
