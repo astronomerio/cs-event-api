@@ -35,6 +35,7 @@ func (h *RouteHandler) singleHandler(kind string) gin.HandlerFunc {
 		}
 
 		message.MaybeFix()
+		message.SkewTimestamp()
 
 		h.ingestionHandler.ProcessMessage(message.String(), message.PartitionKey())
 

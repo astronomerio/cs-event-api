@@ -9,12 +9,15 @@ import (
 )
 
 type Message struct {
-	Type         string                 `json:"type,omitempty"`
-	MessageID    string                 `json:"messageId,omitempty"`
-	Context      map[string]interface{} `json:"context,omitempty"`
-	Timestamp    time.Time              `json:"timestamp,omitempty"`
-	SentAt       time.Time              `json:"sentAt,omitempty"`
-	ReceivedAt   time.Time              `json:"receivedAt,omitempty"`
+	Type      string                 `json:"type,omitempty"`
+	MessageID string                 `json:"messageId,omitempty"`
+	Context   map[string]interface{} `json:"context,omitempty"`
+
+	Timestamp         time.Time `json:"timestamp,omitempty"`
+	OriginalTimestamp time.Time
+	SentAt            time.Time `json:"sentAt,omitempty"`
+	ReceivedAt        time.Time `json:"receivedAt,omitempty"`
+
 	AppID        string                 `json:"appId,oimtempty"`
 	WriteKey     string                 `json:"writeKey,omitempty"`
 	Integrations map[string]interface{} `json:"integrations,omitempty"`
@@ -61,6 +64,18 @@ func (m *Message) ApplyMetadata(metadata RequestMetadata) {
 	if metadata.AppID != "" && m.AppID == "" {
 		m.AppID = metadata.AppID
 	}
+}
+
+// SkewTimestamp will skew the time fields by the difference between SentAt and ReceivedAt
+func (m *Message) SkewTimestamp() {
+	m.Timestamp = m.Timestamp.UTC().Round(time.Millisecond)
+	m.SentAt = m.SentAt.UTC().Round(time.Millisecond)
+
+	m.OriginalTimestamp = m.Timestamp
+
+	// SentAt *should* be at most a few seconds earlier than time.Now()
+	diff := m.ReceivedAt.Sub(m.SentAt)
+	m.Timestamp = m.Timestamp.Add(diff)
 }
 
 // MaybeFix will add fields that should be present if they aren't
