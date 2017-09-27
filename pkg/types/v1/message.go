@@ -53,9 +53,11 @@ func (m *Message) IsValid() bool {
 	return valid
 }
 
+// BindRequest adds the request level fields to the Message
 func (m *Message) BindRequest(c *gin.Context) {
 	md := GetRequestMetadata(c)
 	m.ApplyMetadata(md)
+	m.ReceivedAt = util.NowUTC()
 }
 
 func (m *Message) ApplyMetadata(metadata RequestMetadata) {
@@ -78,6 +80,13 @@ func (m *Message) SkewTimestamp() {
 	m.Timestamp = m.Timestamp.Add(diff)
 }
 
+// FormatTimestamps converts client side timestamps to UTC and rounds them to the nearest
+// Millisecond
+func (m *Message) FormatTimestamps() {
+	m.SentAt = m.SentAt.UTC().Round(time.Millisecond)
+	m.Timestamp = m.Timestamp.UTC().Round(time.Millisecond)
+}
+
 // MaybeFix will add fields that should be present if they aren't
 func (m *Message) MaybeFix() {
 	if m.MessageID == "" {
@@ -85,11 +94,11 @@ func (m *Message) MaybeFix() {
 	}
 
 	if m.SentAt.IsZero() {
-		m.SentAt = time.Now()
+		m.SentAt = util.NowUTC()
 	}
 
 	if m.Timestamp.IsZero() {
-		m.Timestamp = time.Now()
+		m.Timestamp = util.NowUTC()
 	}
 }
 

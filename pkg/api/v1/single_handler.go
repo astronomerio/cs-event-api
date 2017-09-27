@@ -34,6 +34,7 @@ func (h *RouteHandler) singleHandler(kind string) gin.HandlerFunc {
 			return
 		}
 
+		message.FormatTimestamps()
 		message.MaybeFix()
 		message.SkewTimestamp()
 
