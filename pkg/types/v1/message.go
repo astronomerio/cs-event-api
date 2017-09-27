@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/astronomerio/clickstream-ingestion-api/pkg/util"
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
 )
@@ -35,14 +36,7 @@ type Message struct {
 	Version      string                 `json:"version,omitempty"`
 }
 
-func (m *Message) String() string {
-	b, err := json.Marshal(m)
-	if err != nil {
-		return ""
-	}
-	return string(b)
-}
-
+// IsValid returns whether or not the message is valid
 func (m *Message) IsValid() bool {
 	valid := true
 
@@ -60,6 +54,7 @@ func (m *Message) BindRequest(c *gin.Context) {
 	m.ReceivedAt = util.NowUTC()
 }
 
+// ApplyMetadata adds the RequestMetadata to the Message
 func (m *Message) ApplyMetadata(metadata RequestMetadata) {
 	m.Context["ip"] = metadata.IP
 
@@ -102,6 +97,15 @@ func (m *Message) MaybeFix() {
 	}
 }
 
+// PartitionKey returns the partition key for this message. Returns the MessageID field currently
 func (m *Message) PartitionKey() string {
 	return m.MessageID
+}
+
+func (m *Message) String() string {
+	b, err := json.Marshal(m)
+	if err != nil {
+		return ""
+	}
+	return string(b)
 }
