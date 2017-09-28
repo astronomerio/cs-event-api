@@ -2,26 +2,26 @@ package kafka
 
 import (
 	"log"
+	"strings"
 
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/config"
 
-	"github.com/Shopify/sarama"
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
 type KafkaIngestionHandler struct {
-	producer sarama.SyncProducer
+	producer *kafka.Producer
 	topic    string
 }
 
 func NewKafkaIngestionHandler() *KafkaIngestionHandler {
 	appConfig := config.Get()
-	cfg := sarama.NewConfig()
-	cfg.Producer.RequiredAcks = sarama.WaitForAll
-	cfg.Producer.Retry.Max = 5
-	cfg.Producer.Return.Successes = true
-	producer, err := sarama.NewSyncProducer(appConfig.KafkaBrokers, cfg)
+	cfg := &kafka.ConfigMap{
+		"bootstrap.servers": strings.Join(appConfig.KafkaBrokers, ","),
+	}
+	producer, err := kafka.NewProducer(cfg)
 	if err != nil {
-		log.Fatalln("Failed to start Sarama producer:", err)
+		log.Fatalf("Failed to create kafka client: %s\n", err)
 	}
 	h := KafkaIngestionHandler{
 		producer: producer,
@@ -31,12 +31,13 @@ func NewKafkaIngestionHandler() *KafkaIngestionHandler {
 }
 
 func (h *KafkaIngestionHandler) ProcessMessage(message, partition string) {
-	_, _, err := h.producer.SendMessage(&sarama.ProducerMessage{
-		Topic: h.topic,
-		Key:   sarama.StringEncoder(partition),
-		Value: sarama.StringEncoder(message),
-	})
-	if err != nil {
-		log.Println(err)
+	kmessage := &kafka.Message{
+		TopicPartition: kafka.TopicPartition{
+			Topic:     &h.topic,
+			Partition: kafka.PartitionAny,
+		},
+		Key:   []byte(partition),
+		Value: []byte(message),
 	}
+	h.producer.ProduceChannel() <- kmessage
 }
