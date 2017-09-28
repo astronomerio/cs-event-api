@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
@@ -14,8 +15,10 @@ type KafkaIngestionHandler struct {
 	topic    string
 }
 
+var appConfig = config.Get()
+
 func NewKafkaIngestionHandler() *KafkaIngestionHandler {
-	appConfig := config.Get()
+	// https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 	cfg := &kafka.ConfigMap{
 		"bootstrap.servers": strings.Join(appConfig.KafkaBrokers, ","),
 	}
@@ -27,7 +30,29 @@ func NewKafkaIngestionHandler() *KafkaIngestionHandler {
 		producer: producer,
 		topic:    appConfig.KafkaTopic,
 	}
+	h.startEventListener()
 	return &h
+}
+
+func (h *KafkaIngestionHandler) startEventListener() {
+	go func() {
+		for e := range h.producer.Events() {
+			switch ev := e.(type) {
+			case *kafka.Message:
+				m := ev
+				if m.TopicPartition.Error != nil {
+					fmt.Printf("Delivery failed: %v\n", m.TopicPartition.Error)
+				} else {
+					if appConfig.DebugMode {
+						fmt.Printf("Delivered message to topic %s [%d] at offset %v\n",
+							*m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset)
+					}
+				}
+			default:
+				fmt.Printf("Ignored event: %s\n", ev)
+			}
+		}
+	}()
 }
 
 func (h *KafkaIngestionHandler) ProcessMessage(message, partition string) {
