@@ -15,7 +15,7 @@ type Message struct {
 	Context   map[string]interface{} `json:"context,omitempty"`
 
 	Timestamp         time.Time `json:"timestamp,omitempty"`
-	OriginalTimestamp time.Time
+	OriginalTimestamp time.Time `json:"originalTimestamp,omitempty"`
 	SentAt            time.Time `json:"sentAt,omitempty"`
 	ReceivedAt        time.Time `json:"receivedAt,omitempty"`
 
