@@ -1,8 +1,0 @@
-IngestionHandler: kafka
-PrometheusEnabled: true
-HealthCheckEnabled: true
-PProfEnabled: true
-StreamName: main
-
-KafkaBrokers: 192.168.99.100:9092
-KafkaTopic: main
