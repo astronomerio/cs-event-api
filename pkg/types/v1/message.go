@@ -105,7 +105,7 @@ func (m *Message) PartitionKey() string {
 func (m *Message) String() string {
 	b, err := json.Marshal(m)
 	if err != nil {
-		return ""
+		return "<nil>"
 	}
 	return string(b)
 }
