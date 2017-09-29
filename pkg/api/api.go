@@ -50,6 +50,7 @@ func NewServer() *APIServer {
 		healthy:                false,
 		shouldStartAdminServer: false,
 	}
+	s.router.Use(gin.Recovery())
 	return &s
 }
 
