@@ -25,21 +25,21 @@ func (h *RouteHandler) Register(router *gin.Engine) {
 	v1Group := router.Group("v1")
 	{
 		v1Group.POST("t", h.singleHandler("track"))
-		v1Group.GET("track", h.singleHandler("track"))
+		v1Group.POST("track", h.singleHandler("track"))
 
-		v1Group.GET("p", h.singleHandler("page"))
-		v1Group.GET("page", h.singleHandler("page"))
+		v1Group.POST("p", h.singleHandler("page"))
+		v1Group.POST("page", h.singleHandler("page"))
 
-		v1Group.GET("a", h.singleHandler("alias"))
-		v1Group.GET("alias", h.singleHandler("alias"))
+		v1Group.POST("a", h.singleHandler("alias"))
+		v1Group.POST("alias", h.singleHandler("alias"))
 
-		v1Group.GET("i", h.singleHandler("identify"))
-		v1Group.GET("identify", h.singleHandler("identify"))
+		v1Group.POST("i", h.singleHandler("identify"))
+		v1Group.POST("identify", h.singleHandler("identify"))
 
-		v1Group.GET("g", h.singleHandler("group"))
-		v1Group.GET("group", h.singleHandler("group"))
+		v1Group.POST("g", h.singleHandler("group"))
+		v1Group.POST("group", h.singleHandler("group"))
 
-		v1Group.GET("import", h.importHandler)
-		v1Group.GET("batch", h.batchHandler)
+		v1Group.POST("import", h.importHandler)
+		v1Group.POST("batch", h.batchHandler)
 	}
 }
