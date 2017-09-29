@@ -22,6 +22,8 @@ type Configuration struct {
 	PrometheusEnabled  bool
 	HealthCheckEnabled bool
 	PProfEnabled       bool
+
+	DebugMode bool
 }
 
 var AppConfig Configuration
@@ -48,6 +50,7 @@ func setDefaults() {
 	viper.SetDefault("PProfEnabled", false)
 	viper.SetDefault("PrometheusEnabled", true)
 	viper.SetDefault("HealthCheckEnabled", true)
+	viper.SetDefault("DebugMode", false)
 	viper.SetDefault("GracefulShutdownDelay", 30)
 	viper.SetDefault("APIPort", "8080")
 	viper.SetDefault("AdminPort", "8081")
