@@ -33,13 +33,13 @@ func Test_ApplyClockSkew(t *testing.T) {
 			"correctly applies skew by correct amount",
 			&Message{
 				ReceivedAt: time.Date(2017, 1, 1, 0, 0, 2, 300*1e6, time.UTC),
-				SentAt:     time.Date(2017, 1, 1, 0, 0, 1, 0, time.UTC),
-				Timestamp:  time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC),
+				SentAt:     GenericTime{time.Date(2017, 1, 1, 0, 0, 1, 0, time.UTC)},
+				Timestamp:  GenericTime{time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)},
 				// OriginalTimestamp will get added by the function
 			},
 			&Message{
-				Timestamp:         time.Date(2017, 1, 1, 0, 0, 1, 300*1e6, time.UTC),
-				OriginalTimestamp: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC),
+				Timestamp:         GenericTime{time.Date(2017, 1, 1, 0, 0, 1, 300*1e6, time.UTC)},
+				OriginalTimestamp: GenericTime{time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)},
 			},
 		},
 	}
