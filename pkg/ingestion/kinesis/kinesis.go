@@ -52,6 +52,14 @@ func NewMockKinesisIngestionHandler() *KinesisIngestionHandler {
 	}
 }
 
+func (h *KinesisIngestionHandler) Start() error {
+	return nil
+}
+
+func (h *KinesisIngestionHandler) Shutdown() error {
+	return nil
+}
+
 func (h *KinesisIngestionHandler) ProcessMessage(r, partition string) {
 	_, err := h.kc.PutRecord(&kinesis.PutRecordInput{
 		Data:         []byte(r),

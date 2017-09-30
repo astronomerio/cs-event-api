@@ -9,6 +9,8 @@ import (
 
 type IngestionHandler interface {
 	ProcessMessage(string, string)
+	Start() error
+	Shutdown() error
 }
 
 func NewHandler(kind string) IngestionHandler {

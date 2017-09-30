@@ -30,8 +30,18 @@ func NewKafkaIngestionHandler() *KafkaIngestionHandler {
 		producer: producer,
 		topic:    appConfig.KafkaTopic,
 	}
-	h.startEventListener()
 	return &h
+}
+
+func (h *KafkaIngestionHandler) Start() error {
+	h.startEventListener()
+	return nil
+}
+
+func (h *KafkaIngestionHandler) Shutdown() error {
+	h.producer.Flush(10 * 1000)
+	h.producer.Close()
+	return nil
 }
 
 func (h *KafkaIngestionHandler) startEventListener() {
