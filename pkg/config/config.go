@@ -10,6 +10,8 @@ import (
 type Configuration struct {
 	APIPort               string
 	AdminPort             string
+	APIInterface          string
+	AdminInterface        string
 	GracefulShutdownDelay int
 
 	IngestionHandler string
@@ -54,6 +56,8 @@ func setDefaults() {
 	viper.SetDefault("GracefulShutdownDelay", 30)
 	viper.SetDefault("APIPort", "8080")
 	viper.SetDefault("AdminPort", "8081")
+	viper.SetDefault("APIInterface", "0.0.0.0")
+	viper.SetDefault("AdminInterface", "0.0.0.0")
 }
 
 // Get returns the config

@@ -36,6 +36,9 @@ type APIServerConfig struct {
 	APIPort   string
 	AdminPort string
 
+	APIInterface   string
+	AdminInterface string
+
 	IngestionHandler ingestion.IngestionHandler
 
 	GracefulShutdownDelay int
@@ -94,10 +97,6 @@ func (s *APIServer) WithRequestID() *APIServer {
 	return s
 }
 
-func buildListeningInterface(port string) string {
-	return "0.0.0.0:" + port
-}
-
 // Run starts the http server(s) and then listens for the shutdown signal
 func (s *APIServer) Run() {
 	if os.ExpandEnv("GIN_MODE") == gin.ReleaseMode {
@@ -105,7 +104,7 @@ func (s *APIServer) Run() {
 	}
 
 	s.httpserver = &http.Server{
-		Addr:    buildListeningInterface(s.config.APIPort),
+		Addr:    s.config.APIInterface + ":" + s.config.APIPort,
 		Handler: s.router,
 	}
 
@@ -120,7 +119,7 @@ func (s *APIServer) Run() {
 
 	if s.shouldStartAdminServer {
 		s.adminHttpserver = &http.Server{
-			Addr:    buildListeningInterface(s.config.AdminPort),
+			Addr:    s.config.AdminInterface + ":" + s.config.AdminPort,
 			Handler: s.adminRouter,
 		}
 		go func() {
