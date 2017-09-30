@@ -2,6 +2,7 @@ package v1
 
 import (
 	"encoding/json"
+	"log"
 	"time"
 
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/util"
@@ -14,10 +15,10 @@ type Message struct {
 	MessageID string                 `json:"messageId,omitempty"`
 	Context   map[string]interface{} `json:"context,omitempty"`
 
-	Timestamp         time.Time `json:"timestamp,omitempty"`
-	OriginalTimestamp time.Time `json:"originalTimestamp,omitempty"`
-	SentAt            time.Time `json:"sentAt,omitempty"`
-	ReceivedAt        time.Time `json:"receivedAt,omitempty"`
+	Timestamp         GenericTime `json:"timestamp,omitempty"`
+	OriginalTimestamp GenericTime `json:"originalTimestamp,omitempty"`
+	SentAt            GenericTime `json:"sentAt,omitempty"`
+	ReceivedAt        time.Time   `json:"receivedAt,omitempty"`
 
 	AppID        string                 `json:"appId,oimtempty"`
 	WriteKey     string                 `json:"writeKey,omitempty"`
@@ -51,12 +52,12 @@ func (m *Message) IsValid() bool {
 func (m *Message) BindRequest(c *gin.Context) {
 	md := GetRequestMetadata(c)
 	m.ApplyMetadata(md)
-	m.ReceivedAt = util.NowUTC()
 }
 
 // ApplyMetadata adds the RequestMetadata to the Message
 func (m *Message) ApplyMetadata(metadata RequestMetadata) {
 	m.Context["ip"] = metadata.IP
+	m.ReceivedAt = metadata.ReceivedAt
 
 	if metadata.AppID != "" && m.AppID == "" {
 		m.AppID = metadata.AppID
@@ -65,21 +66,21 @@ func (m *Message) ApplyMetadata(metadata RequestMetadata) {
 
 // SkewTimestamp will skew the time fields by the difference between SentAt and ReceivedAt
 func (m *Message) SkewTimestamp() {
-	m.Timestamp = m.Timestamp.UTC().Round(time.Millisecond)
-	m.SentAt = m.SentAt.UTC().Round(time.Millisecond)
-
 	m.OriginalTimestamp = m.Timestamp
 
+	m.Timestamp = GenericTime{m.Timestamp.UTC().Round(time.Millisecond)}
+	m.SentAt = GenericTime{m.SentAt.UTC().Round(time.Millisecond)}
+
 	// SentAt *should* be at most a few seconds earlier than time.Now()
-	diff := m.ReceivedAt.Sub(m.SentAt)
-	m.Timestamp = m.Timestamp.Add(diff)
+	diff := m.ReceivedAt.Sub(m.SentAt.Time)
+	m.Timestamp = GenericTime{m.Timestamp.Add(diff)}
 }
 
 // FormatTimestamps converts client side timestamps to UTC and rounds them to the nearest
 // Millisecond
 func (m *Message) FormatTimestamps() {
-	m.SentAt = m.SentAt.UTC().Round(time.Millisecond)
-	m.Timestamp = m.Timestamp.UTC().Round(time.Millisecond)
+	m.SentAt = GenericTime{m.SentAt.UTC().Round(time.Millisecond)}
+	m.Timestamp = GenericTime{m.Timestamp.UTC().Round(time.Millisecond)}
 }
 
 // MaybeFix will add fields that should be present if they aren't
@@ -89,11 +90,11 @@ func (m *Message) MaybeFix() {
 	}
 
 	if m.SentAt.IsZero() {
-		m.SentAt = util.NowUTC()
+		m.SentAt = GenericTime{util.NowUTC()}
 	}
 
 	if m.Timestamp.IsZero() {
-		m.Timestamp = util.NowUTC()
+		m.Timestamp = GenericTime{util.NowUTC()}
 	}
 }
 
@@ -105,6 +106,7 @@ func (m *Message) PartitionKey() string {
 func (m *Message) String() string {
 	b, err := json.Marshal(m)
 	if err != nil {
+		log.Println(err)
 		return "<nil>"
 	}
 	return string(b)

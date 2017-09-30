@@ -2,12 +2,11 @@ package v1
 
 import (
 	"encoding/json"
-	"time"
 )
 
 type Batch struct {
-	SentAt   time.Time `json:"sentAt,omitempty"`
-	Messages []Message `json:"batch,omitempty"`
+	SentAt   GenericTime `json:"sentAt,omitempty"`
+	Messages []*Message  `json:"batch,omitempty"`
 }
 
 func (b *Batch) String() string {
