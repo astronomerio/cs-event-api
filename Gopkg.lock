@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/araddon/dateparse"
+  packages = ["."]
+  revision = "e2f3c465e969d5981ef2f7f83e18d266d5df908c"
+
+[[projects]]
   name = "github.com/aws/aws-sdk-go"
   packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/shareddefaults","private/protocol","private/protocol/json/jsonutil","private/protocol/jsonrpc","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/xml/xmlutil","service/kinesis","service/kinesis/kinesisiface","service/sts"]
   revision = "b69f447375c7fa0047ebcdd8ae5d585d5aac2f71"
@@ -226,6 +232,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "044d9136f05d75f85cc2c567076fa8b5bc522473e07b637e13dee2f7aa7ffdb8"
+  inputs-digest = "76cc45c5028c580345b0024cb7545531f4238bfd06e83aa442b90fc530f3424b"
   solver-name = "gps-cdcl"
   solver-version = 1
