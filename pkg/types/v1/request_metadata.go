@@ -2,6 +2,7 @@ package v1
 
 import (
 	"encoding/base64"
+	"strings"
 	"time"
 
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/util"
@@ -17,15 +18,14 @@ type RequestMetadata struct {
 func GetRequestMetadata(c *gin.Context) (md RequestMetadata) {
 	md.IP = c.ClientIP()
 	md.ReceivedAt = util.NowUTC()
-
-	authHeader := c.GetHeader("Authorization")
+	authHeader := strings.TrimLeft(c.GetHeader("Authorization"), "Basic ")
 	if authHeader != "" {
 		bs, err := base64.StdEncoding.DecodeString(authHeader)
 		if err != nil {
 			// TODO: handle error
 			return
 		}
-		md.AppID = string(bs)
+		md.AppID = strings.TrimRight(string(bs), ":")
 	}
 	return
 }
