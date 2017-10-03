@@ -10,7 +10,7 @@ jobs:
       - run: go get -v -t -d ./...
       - run: go test -v ./...
       - run: |
-          docker login -u $DOCKER_USER -p $DOCKER_PASS 
-          make build
+          # docker login -u $DOCKER_USER -p $DOCKER_PASS 
+          # make build-image
           # TODO: add make command for push
           # make push
