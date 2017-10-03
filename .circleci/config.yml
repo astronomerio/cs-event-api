@@ -12,3 +12,5 @@ jobs:
       - run: |
           docker login -u $DOCKER_USER -p $DOCKER_PASS 
           make build
+          # TODO: add make command for push
+          # make push
