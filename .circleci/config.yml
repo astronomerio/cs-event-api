@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-    - image: astronomerio/docker-librdkafka-golang:1.9-0.11.0-r0
+    - image: astronomerio/alpine-librdkafka-golang:1.9-0.11.0-r0
     working_directory: /go/src/github.com/astronomerio/clickstream-ingestion-api
     steps:
       - checkout
