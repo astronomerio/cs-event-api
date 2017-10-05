@@ -15,22 +15,20 @@ type prometheusInstrumentation struct {
 	requestDuration *prometheus.HistogramVec
 }
 
-type Client struct {
-	Log *logrus.Logger
-}
-
 var pi *prometheusInstrumentation
+var log *logrus.Logger
 
 // Register applies the route for prometheus scraping and applies the middleware function
 // for profiling
-func (c *Client) Register(router, middlewareRouter *gin.Engine) {
-	c.buildVectors()
+func Register(router, middlewareRouter *gin.Engine, log *logrus.Logger) {
+	log = log
+	buildVectors()
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
-	middlewareRouter.Use(c.middleware)
+	middlewareRouter.Use(middleware)
 }
 
-func (c *Client) buildVectors() {
-	logger := c.Log.WithFields(logrus.Fields{"package": "prometheus", "function": "buildVectors"})
+func buildVectors() {
+	logger := log.WithFields(logrus.Fields{"package": "prometheus", "function": "buildVectors"})
 
 	pi = &prometheusInstrumentation{
 		requestCounter: prometheus.NewCounterVec(prometheus.CounterOpts{
@@ -60,7 +58,7 @@ func (c *Client) buildVectors() {
 	}
 }
 
-func (c *Client) middleware(ctx *gin.Context) {
+func middleware(ctx *gin.Context) {
 	start := time.Now()
 
 	ctx.Next()

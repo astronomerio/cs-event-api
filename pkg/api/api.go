@@ -86,11 +86,7 @@ func (s *APIServer) WithPProf() *APIServer {
 
 // WithPrometheusMonitoring injects a middleware handler that will hook into the prometheus client
 func (s *APIServer) WithPrometheusMonitoring() *APIServer {
-	prom := &prometheus.Client{
-		Log: s.config.Log,
-	}
-
-	prom.Register(s.adminRouter, s.router)
+	prometheus.Register(s.adminRouter, s.router, s.config.Log)
 	s.shouldStartAdminServer = true
 	return s
 }
