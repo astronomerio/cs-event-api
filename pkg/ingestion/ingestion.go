@@ -6,27 +6,27 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type IngestionHandler interface {
+type Handler interface {
 	ProcessMessage(string, string)
 	Start() error
 	Shutdown() error
 }
 
-func NewHandler(kind string, log *logrus.Logger) IngestionHandler {
+func NewHandler(kind string, log *logrus.Logger) Handler {
 	logger := log.WithFields(logrus.Fields{"package": "api", "function": "NewHandler"})
 
-	handlers := map[string]func() IngestionHandler{
-		"kinesis": func() IngestionHandler {
-			return kinesis.NewIngestionHandler(log)
+	handlers := map[string]func() Handler{
+		"kinesis": func() Handler {
+			return kinesis.NewHandler(log)
 		},
-		"mock-kinesis": func() IngestionHandler {
-			return kinesis.NewMockIngestionHandler()
+		"mock-kinesis": func() Handler {
+			return kinesis.NewMockHandler()
 		},
-		"localstack": func() IngestionHandler {
-			return kinesis.NewMockLocalStackIngestionHandler(log)
+		"localstack": func() Handler {
+			return kinesis.NewMockLocalStackHandler(log)
 		},
-		"kafka": func() IngestionHandler {
-			return kafka.NewIngestionHandler(log)
+		"kafka": func() Handler {
+			return kafka.NewHandler(log)
 		},
 	}
 

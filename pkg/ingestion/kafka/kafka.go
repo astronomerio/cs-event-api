@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type IngestionHandler struct {
+type Handler struct {
 	producer *kafka.Producer
 	topic    string
 	log      *logrus.Logger
@@ -17,8 +17,8 @@ type IngestionHandler struct {
 
 var appConfig = config.Get()
 
-func NewIngestionHandler(log *logrus.Logger) *IngestionHandler {
-	logger := log.WithFields(logrus.Fields{"package": "kafka", "function": "NewIngestionHandler"})
+func NewHandler(log *logrus.Logger) *Handler {
+	logger := log.WithFields(logrus.Fields{"package": "kafka", "function": "NewHandler"})
 	// https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 	cfg := &kafka.ConfigMap{
 		"bootstrap.servers": strings.Join(appConfig.KafkaBrokers, ","),
@@ -27,7 +27,7 @@ func NewIngestionHandler(log *logrus.Logger) *IngestionHandler {
 	if err != nil {
 		logger.Fatalf("failed to create kafka client: %s\n", err)
 	}
-	h := IngestionHandler{
+	h := Handler {
 		producer: producer,
 		topic:    appConfig.KafkaTopic,
 		log:      log,
@@ -35,18 +35,18 @@ func NewIngestionHandler(log *logrus.Logger) *IngestionHandler {
 	return &h
 }
 
-func (h *IngestionHandler) Start() error {
+func (h *Handler) Start() error {
 	h.startEventListener()
 	return nil
 }
 
-func (h *IngestionHandler) Shutdown() error {
+func (h *Handler) Shutdown() error {
 	h.producer.Flush(10 * 1000)
 	h.producer.Close()
 	return nil
 }
 
-func (h *IngestionHandler) startEventListener() {
+func (h *Handler) startEventListener() {
 	logger := logrus.WithFields(logrus.Fields{"package": "kafka", "function": "startEventListener"})
 	go func() {
 		for e := range h.producer.Events() {
@@ -66,7 +66,7 @@ func (h *IngestionHandler) startEventListener() {
 	}()
 }
 
-func (h *IngestionHandler) ProcessMessage(message, partition string) {
+func (h *Handler) ProcessMessage(message, partition string) {
 	msg := &kafka.Message{
 		TopicPartition: kafka.TopicPartition{
 			Topic:     &h.topic,

@@ -24,7 +24,7 @@ func buildAndStart() {
 	logger := log.WithFields(logrus.Fields{"package": "cmd", "function": "main"})
 
 
-	apiServerConfig := &api.APIServerConfig{
+	apiServerConfig := &api.ServerConfig{
 		APIPort:          appConfig.APIPort,
 		AdminPort:        appConfig.AdminPort,
 		Log:              log,

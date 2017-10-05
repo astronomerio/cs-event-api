@@ -13,7 +13,7 @@ type RouteHandler interface {
 }
 
 type HandlerConfig struct {
-	IngestionHandler ingestion.IngestionHandler
+	IngestionHandler ingestion.Handler
 	Log *logrus.Logger
 }
 

@@ -8,7 +8,7 @@ import (
 )
 
 type RouteHandler struct {
-	ingestionHandler ingestion.IngestionHandler
+	ingestionHandler ingestion.Handler
 	log *logrus.Logger
 }
 

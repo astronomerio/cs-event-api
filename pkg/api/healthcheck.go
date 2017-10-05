@@ -7,7 +7,7 @@ import (
 )
 
 // HealthCheckHandler writes to the request whether or not the server is healthy
-func (s *APIServer) HealthCheckHandler(c *gin.Context) {
+func (s *Server) HealthCheckHandler(c *gin.Context) {
 	if s.IsHealthy() {
 		c.AbortWithStatus(http.StatusOK)
 	} else {
@@ -16,18 +16,18 @@ func (s *APIServer) HealthCheckHandler(c *gin.Context) {
 }
 
 // SetHealthy marks the server as healthy
-func (s *APIServer) SetHealthy() {
+func (s *Server) SetHealthy() {
 	s.healthy = true
 	s.httpServer.SetKeepAlivesEnabled(true)
 }
 
 // SetUnhealthy marks the server as unhealthy
-func (s *APIServer) SetUnhealthy() {
+func (s *Server) SetUnhealthy() {
 	s.healthy = false
 	s.httpServer.SetKeepAlivesEnabled(false)
 }
 
 // IsHealthly returns whether or not the server is healthy
-func (s *APIServer) IsHealthy() bool {
+func (s *Server) IsHealthy() bool {
 	return s.healthy
 }
