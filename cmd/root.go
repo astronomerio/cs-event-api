@@ -2,45 +2,56 @@ package cmd
 
 import (
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion"
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/logger"
 	"github.com/spf13/cobra"
 
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/api"
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/config"
+	"github.com/sirupsen/logrus"
 )
 
 func buildAndStart() {
-	apiserver := api.NewServer()
+	apiServer := api.NewServer()
 	appConfig := config.Get()
 	appConfig.Print()
 
-	apiserverConfig := &api.APIServerConfig{
+	if appConfig.LogFormat == "json" {
+		logrus.SetFormatter(&logrus.JSONFormatter{})
+	}
+	log := logrus.New()
+	if appConfig.LogDebug {
+		log.SetLevel(logrus.DebugLevel)
+	}
+	logger := log.WithFields(logrus.Fields{"package": "cmd", "function": "main"})
+
+
+	apiServerConfig := &api.APIServerConfig{
 		APIPort:          appConfig.APIPort,
 		AdminPort:        appConfig.AdminPort,
-		Logger:           logger.NewLogger("mock"),
-		IngestionHandler: ingestion.NewHandler(appConfig.IngestionHandler),
+		Log:              log,
+		IngestionHandler: ingestion.NewHandler(appConfig.IngestionHandler, log),
 
 		GracefulShutdownDelay: appConfig.GracefulShutdownDelay,
 	}
 
-	apiserver.WithConfig(apiserverConfig)
-	apiserver.WithDefaultRoutes()
+	apiServer.WithConfig(apiServerConfig)
+	apiServer.WithDefaultRoutes()
 
-	apiserver.WithRequestID()
+	apiServer.WithRequestID()
 
 	if appConfig.HealthCheckEnabled {
-		apiserver.WithHealthCheck()
+		apiServer.WithHealthCheck()
 	}
 
 	if appConfig.PrometheusEnabled {
-		apiserver.WithPrometheusMonitoring()
+		apiServer.WithPrometheusMonitoring()
 	}
 
 	if appConfig.PProfEnabled {
-		apiserver.WithPProf()
+		apiServer.WithPProf()
 	}
 
-	apiserver.Run()
+	logger.Info("starting api server")
+	apiServer.Run()
 }
 
 var RootCmd = &cobra.Command{

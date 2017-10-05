@@ -1,12 +1,12 @@
 package prometheus
 
 import (
-	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
 )
 
 type prometheusInstrumentation struct {
@@ -15,17 +15,23 @@ type prometheusInstrumentation struct {
 	requestDuration *prometheus.HistogramVec
 }
 
+type Client struct {
+	Log *logrus.Logger
+}
+
 var pi *prometheusInstrumentation
 
 // Register applies the route for prometheus scraping and applies the middleware function
 // for profiling
-func Register(router, middlewareRouter *gin.Engine) {
-	buildVectors()
+func (c *Client) Register(router, middlewareRouter *gin.Engine) {
+	c.buildVectors()
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
-	middlewareRouter.Use(middleware)
+	middlewareRouter.Use(c.middleware)
 }
 
-func buildVectors() {
+func (c *Client) buildVectors() {
+	logger := c.Log.WithFields(logrus.Fields{"package": "prometheus", "function": "buildVectors"})
+
 	pi = &prometheusInstrumentation{
 		requestCounter: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Name: "api_requests_total",
@@ -44,28 +50,28 @@ func buildVectors() {
 
 	var err error
 	if err = prometheus.Register(pi.requestCounter); err != nil {
-		log.Fatal("Error registering requestCounter", "Error", err)
+		logger.Fatal("Error registering requestCounter", "Error", err)
 	}
 	if err = prometheus.Register(pi.requestDuration); err != nil {
-		log.Fatal("Error registering requestDuration", "Error", err)
+		logger.Fatal("Error registering requestDuration", "Error", err)
 	}
 	if err = prometheus.Register(pi.errorCounter); err != nil {
-		log.Fatal("Error registering errorCounter", "Error", err)
+		logger.Fatal("Error registering errorCounter", "Error", err)
 	}
 }
 
-func middleware(c *gin.Context) {
+func (c *Client) middleware(ctx *gin.Context) {
 	start := time.Now()
 
-	c.Next()
+	ctx.Next()
 
 	// the handler didnt mark this request to be profiled
-	if !c.GetBool("profile") {
+	if !ctx.GetBool("profile") {
 		return
 	}
 
-	t := c.GetString("type")
-	a := c.GetString("action")
+	t := ctx.GetString("type")
+	a := ctx.GetString("action")
 
 	if t == "" || a == "" {
 		return

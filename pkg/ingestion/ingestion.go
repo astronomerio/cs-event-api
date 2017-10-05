@@ -1,10 +1,9 @@
 package ingestion
 
 import (
-	"log"
-
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion/kafka"
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion/kinesis"
+	"github.com/sirupsen/logrus"
 )
 
 type IngestionHandler interface {
@@ -13,25 +12,27 @@ type IngestionHandler interface {
 	Shutdown() error
 }
 
-func NewHandler(kind string) IngestionHandler {
+func NewHandler(kind string, log *logrus.Logger) IngestionHandler {
+	logger := log.WithFields(logrus.Fields{"package": "api", "function": "NewHandler"})
+
 	handlers := map[string]func() IngestionHandler{
 		"kinesis": func() IngestionHandler {
-			return kinesis.NewKinesisIngestionHandler()
+			return kinesis.NewIngestionHandler(log)
 		},
 		"mock-kinesis": func() IngestionHandler {
-			return kinesis.NewMockKinesisIngestionHandler()
+			return kinesis.NewMockIngestionHandler()
 		},
 		"localstack": func() IngestionHandler {
-			return kinesis.NewMockKinesisLocalStackIngestionHandler()
+			return kinesis.NewMockLocalStackIngestionHandler(log)
 		},
 		"kafka": func() IngestionHandler {
-			return kafka.NewKafkaIngestionHandler()
+			return kafka.NewIngestionHandler(log)
 		},
 	}
 
 	f, ok := handlers[kind]
 	if !ok {
-		log.Fatal("invalid ingestion handler")
+		logger.Fatal("invalid ingestion handler")
 	}
 
 	return f()

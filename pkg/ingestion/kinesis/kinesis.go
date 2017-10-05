@@ -1,8 +1,6 @@
 package kinesis
 
 import (
-	"log"
-
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/config"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -10,64 +8,71 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kinesis"
 	"github.com/aws/aws-sdk-go/service/kinesis/kinesisiface"
+	"github.com/sirupsen/logrus"
 )
 
-type KinesisIngestionHandler struct {
+type IngestionHandler struct {
 	kc         kinesisiface.KinesisAPI
 	streamName *string
+	log        *logrus.Logger
 }
 
-func NewKinesisIngestionHandler() *KinesisIngestionHandler {
+func NewIngestionHandler(log *logrus.Logger) *IngestionHandler {
+	logger := log.WithFields(logrus.Fields{"package": "kinesis", "function": "NewIngestionHandler"})
 	s, err := session.NewSession()
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
-	h := &KinesisIngestionHandler{
-		kc: kinesis.New(s),
+	h := &IngestionHandler{
+		kc:  kinesis.New(s),
+		log: log,
 	}
 	h.streamName = aws.String(config.Get().StreamName)
 	return h
 }
 
-func NewMockKinesisLocalStackIngestionHandler() *KinesisIngestionHandler {
+func NewMockLocalStackIngestionHandler(log *logrus.Logger) *IngestionHandler {
+	logger := log.WithFields(logrus.Fields{"package": "kinesis", "function": "NewMockLocalStackIngestionHandler"})
 	s, err := session.NewSession(&aws.Config{
 		Region:      aws.String("us-east-1"),
 		Credentials: credentials.NewEnvCredentials(),
 	})
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
-	h := &KinesisIngestionHandler{
+	h := &IngestionHandler{
 		kc: kinesis.New(s, &aws.Config{
 			Endpoint: aws.String("http://192.168.1.225:4568"),
 		}),
+		log: log,
 	}
 	h.streamName = aws.String(config.Get().StreamName)
 	return h
 }
 
-func NewMockKinesisIngestionHandler() *KinesisIngestionHandler {
-	return &KinesisIngestionHandler{
+func NewMockIngestionHandler() *IngestionHandler {
+	return &IngestionHandler{
 		kc: NewMockKinesisClient(),
 	}
 }
 
-func (h *KinesisIngestionHandler) Start() error {
+func (h *IngestionHandler) Start() error {
 	return nil
 }
 
-func (h *KinesisIngestionHandler) Shutdown() error {
+func (h *IngestionHandler) Shutdown() error {
 	return nil
 }
 
-func (h *KinesisIngestionHandler) ProcessMessage(r, partition string) {
+func (h *IngestionHandler) ProcessMessage(r, partition string) {
+	logger := h.log.WithFields(logrus.Fields{"package": "kinesis", "function": "ProcessMessage"})
 	_, err := h.kc.PutRecord(&kinesis.PutRecordInput{
 		Data:         []byte(r),
 		PartitionKey: aws.String(partition),
 		StreamName:   h.streamName,
 	})
 	if err != nil {
-		log.Println(err)
+		logger.Info(err)
 		return
 	}
 }

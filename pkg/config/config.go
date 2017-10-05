@@ -25,7 +25,8 @@ type Configuration struct {
 	HealthCheckEnabled bool
 	PProfEnabled       bool
 
-	DebugMode bool
+	LogDebug  bool
+	LogFormat string
 }
 
 var AppConfig Configuration
@@ -52,12 +53,13 @@ func setDefaults() {
 	viper.SetDefault("PProfEnabled", false)
 	viper.SetDefault("PrometheusEnabled", true)
 	viper.SetDefault("HealthCheckEnabled", true)
-	viper.SetDefault("DebugMode", false)
 	viper.SetDefault("GracefulShutdownDelay", 30)
 	viper.SetDefault("APIPort", "8080")
 	viper.SetDefault("AdminPort", "8081")
 	viper.SetDefault("APIInterface", "0.0.0.0")
 	viper.SetDefault("AdminInterface", "0.0.0.0")
+	viper.SetDefault("LogFormat", "json")
+	viper.SetDefault("LogDebug", false)
 }
 
 // Get returns the config
