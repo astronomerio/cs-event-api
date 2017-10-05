@@ -152,7 +152,7 @@ func (s *APIServer) Run() {
 	s.SetUnhealthy()
 	sleepDuration := time.Duration(s.config.GracefulShutdownDelay) * time.Second
 
-	logger.Info("Sleeping for %s...\n", sleepDuration.String())
+	logger.Infof("Sleeping for %s...\n", sleepDuration.String())
 	time.Sleep(sleepDuration)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
