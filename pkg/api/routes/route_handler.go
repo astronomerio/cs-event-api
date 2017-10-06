@@ -4,7 +4,6 @@ import (
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
 type RouteHandler interface {
@@ -14,7 +13,6 @@ type RouteHandler interface {
 
 type HandlerConfig struct {
 	IngestionHandler ingestion.Handler
-	Log *logrus.Logger
 }
 
 type RouteDefinition struct {

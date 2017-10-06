@@ -6,6 +6,7 @@ import (
 
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/api"
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/config"
+	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 	"github.com/sirupsen/logrus"
 )
 
@@ -14,21 +15,13 @@ func buildAndStart() {
 	appConfig := config.Get()
 	appConfig.Print()
 
-	if appConfig.LogFormat == "json" {
-		logrus.SetFormatter(&logrus.JSONFormatter{})
-	}
-	log := logrus.New()
-	if appConfig.LogDebug {
-		log.SetLevel(logrus.DebugLevel)
-	}
-	logger := log.WithFields(logrus.Fields{"package": "cmd", "function": "main"})
+	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "cmd", "function": "main"})
 
 
 	apiServerConfig := &api.ServerConfig{
 		APIPort:          appConfig.APIPort,
 		AdminPort:        appConfig.AdminPort,
-		Log:              log,
-		IngestionHandler: ingestion.NewHandler(appConfig.IngestionHandler, log),
+		IngestionHandler: ingestion.NewHandler(appConfig.IngestionHandler),
 
 		GracefulShutdownDelay: appConfig.GracefulShutdownDelay,
 	}

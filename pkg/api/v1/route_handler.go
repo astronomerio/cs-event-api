@@ -4,12 +4,10 @@ import (
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/api/routes"
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion"
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
 type RouteHandler struct {
 	ingestionHandler ingestion.Handler
-	log *logrus.Logger
 }
 
 func NewRouteHandler() *RouteHandler {
@@ -18,7 +16,6 @@ func NewRouteHandler() *RouteHandler {
 
 func (h *RouteHandler) WithConfig(config *routes.HandlerConfig) {
 	h.ingestionHandler = config.IngestionHandler
-	h.log = config.Log
 }
 
 func (h *RouteHandler) Register(router *gin.Engine) {

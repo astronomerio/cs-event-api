@@ -14,6 +14,7 @@ import (
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 )
 
 type Server struct {
@@ -41,8 +42,6 @@ type ServerConfig struct {
 	IngestionHandler ingestion.Handler
 
 	GracefulShutdownDelay int
-
-	Log *logrus.Logger
 }
 
 func NewServer() *Server {
@@ -86,7 +85,7 @@ func (s *Server) WithPProf() *Server {
 
 // WithPrometheusMonitoring injects a middleware handler that will hook into the prometheus client
 func (s *Server) WithPrometheusMonitoring() *Server {
-	prometheus.Register(s.adminRouter, s.router, s.config.Log)
+	prometheus.Register(s.adminRouter, s.router)
 	s.shouldStartAdminServer = true
 	return s
 }
@@ -98,7 +97,7 @@ func (s *Server) WithRequestID() *Server {
 
 // Run starts the http server(s) and then listens for the shutdown signal
 func (s *Server) Run() {
-	logger := s.config.Log.WithFields(logrus.Fields{"package": "api", "function": "Run"})
+	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "api", "function": "Run"})
 
 	if os.ExpandEnv("GIN_MODE") == gin.ReleaseMode {
 		gin.DisableConsoleColor()

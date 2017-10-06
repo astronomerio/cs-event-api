@@ -7,6 +7,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 )
 
 type prometheusInstrumentation struct {
@@ -16,24 +17,22 @@ type prometheusInstrumentation struct {
 }
 
 var pi *prometheusInstrumentation
-var log *logrus.Logger
 
 // Register applies the route for prometheus scraping and applies the middleware function
 // for profiling
-func Register(router, middlewareRouter *gin.Engine, log *logrus.Logger) {
-	log = log
+func Register(router, middlewareRouter *gin.Engine) {
 	buildVectors()
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	middlewareRouter.Use(middleware)
 }
 
 func buildVectors() {
-	logger := log.WithFields(logrus.Fields{"package": "prometheus", "function": "buildVectors"})
+	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "prometheus", "function": "buildVectors"})
 
 	pi = &prometheusInstrumentation{
 		requestCounter: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Name: "api_requests_total",
-			Help: "How many api requests processed, paritioned by type and action",
+			Help: "How many api requests processed, partitioned by type and action",
 		}, []string{"type", "action"}),
 		errorCounter: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Name: "api_errors_total",

@@ -4,6 +4,7 @@ import (
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion/kafka"
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion/kinesis"
 	"github.com/sirupsen/logrus"
+	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 )
 
 type Handler interface {
@@ -12,21 +13,21 @@ type Handler interface {
 	Shutdown() error
 }
 
-func NewHandler(kind string, log *logrus.Logger) Handler {
-	logger := log.WithFields(logrus.Fields{"package": "api", "function": "NewHandler"})
+func NewHandler(kind string) Handler {
+	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "api", "function": "NewHandler"})
 
 	handlers := map[string]func() Handler{
 		"kinesis": func() Handler {
-			return kinesis.NewHandler(log)
+			return kinesis.NewHandler()
 		},
 		"mock-kinesis": func() Handler {
 			return kinesis.NewMockHandler()
 		},
 		"localstack": func() Handler {
-			return kinesis.NewMockLocalStackHandler(log)
+			return kinesis.NewMockLocalStackHandler()
 		},
 		"kafka": func() Handler {
-			return kafka.NewHandler(log)
+			return kafka.NewHandler()
 		},
 	}
 

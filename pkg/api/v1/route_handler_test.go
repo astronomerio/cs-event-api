@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion"
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/logger"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hashicorp/consul/logger"
 )
 
 func TestRouteHandler_Register(t *testing.T) {

@@ -7,18 +7,18 @@ import (
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/sirupsen/logrus"
+	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 )
 
 type Handler struct {
 	producer *kafka.Producer
 	topic    string
-	log      *logrus.Logger
 }
 
 var appConfig = config.Get()
 
-func NewHandler(log *logrus.Logger) *Handler {
-	logger := log.WithFields(logrus.Fields{"package": "kafka", "function": "NewHandler"})
+func NewHandler() *Handler {
+	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka", "function": "NewHandler"})
 	// https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 	cfg := &kafka.ConfigMap{
 		"bootstrap.servers": strings.Join(appConfig.KafkaBrokers, ","),
@@ -30,7 +30,6 @@ func NewHandler(log *logrus.Logger) *Handler {
 	h := Handler {
 		producer: producer,
 		topic:    appConfig.KafkaTopic,
-		log:      log,
 	}
 	return &h
 }
@@ -47,7 +46,7 @@ func (h *Handler) Shutdown() error {
 }
 
 func (h *Handler) startEventListener() {
-	logger := logrus.WithFields(logrus.Fields{"package": "kafka", "function": "startEventListener"})
+	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka", "function": "startEventListener"})
 	go func() {
 		for e := range h.producer.Events() {
 			switch ev := e.(type) {
