@@ -10,14 +10,14 @@ import (
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 )
 
-type Handler struct {
+type KafkaHandler struct {
 	producer *kafka.Producer
 	topic    string
 }
 
 var appConfig = config.Get()
 
-func NewHandler() *Handler {
+func NewHandler() *KafkaHandler {
 	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka", "function": "NewHandler"})
 	// https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 	cfg := &kafka.ConfigMap{
@@ -27,25 +27,25 @@ func NewHandler() *Handler {
 	if err != nil {
 		logger.Fatalf("failed to create kafka client: %s\n", err)
 	}
-	h := Handler {
+	h := KafkaHandler {
 		producer: producer,
 		topic:    appConfig.KafkaTopic,
 	}
 	return &h
 }
 
-func (h *Handler) Start() error {
+func (h *KafkaHandler) Start() error {
 	h.startEventListener()
 	return nil
 }
 
-func (h *Handler) Shutdown() error {
+func (h *KafkaHandler) Shutdown() error {
 	h.producer.Flush(10 * 1000)
 	h.producer.Close()
 	return nil
 }
 
-func (h *Handler) startEventListener() {
+func (h *KafkaHandler) startEventListener() {
 	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka", "function": "startEventListener"})
 	go func() {
 		for e := range h.producer.Events() {
@@ -65,7 +65,7 @@ func (h *Handler) startEventListener() {
 	}()
 }
 
-func (h *Handler) ProcessMessage(message, partition string) {
+func (h *KafkaHandler) ProcessMessage(message, partition string) {
 	msg := &kafka.Message{
 		TopicPartition: kafka.TopicPartition{
 			Topic:     &h.topic,

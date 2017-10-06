@@ -12,26 +12,26 @@ import (
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 )
 
-type Handler struct {
+type KinesisHandler struct {
 	kc         kinesisiface.KinesisAPI
 	streamName *string
 }
 
-func NewHandler() *Handler {
-	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "kinesis", "function": "NewHandler"})
+func NewHandler() *KinesisHandler {
+	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "kinesis", "function": "NewKinesisHandler"})
 	s, err := session.NewSession()
 	if err != nil {
 		logger.Fatal(err)
 	}
-	h := &Handler{
+	h := &KinesisHandler{
 		kc:  kinesis.New(s),
 	}
 	h.streamName = aws.String(config.Get().StreamName)
 	return h
 }
 
-func NewMockLocalStackHandler() *Handler {
-	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "kinesis", "function": "NewMockLocalStackHandler"})
+func NewMockLocalStackHandler() *KinesisHandler {
+	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "kinesis", "function": "NewMockLocalStackKinesisHandler"})
 	s, err := session.NewSession(&aws.Config{
 		Region:      aws.String("us-east-1"),
 		Credentials: credentials.NewEnvCredentials(),
@@ -39,7 +39,7 @@ func NewMockLocalStackHandler() *Handler {
 	if err != nil {
 		logger.Fatal(err)
 	}
-	h := &Handler{
+	h := &KinesisHandler{
 		kc: kinesis.New(s, &aws.Config{
 			Endpoint: aws.String("http://192.168.1.225:4568"),
 		}),
@@ -48,21 +48,21 @@ func NewMockLocalStackHandler() *Handler {
 	return h
 }
 
-func NewMockHandler() *Handler {
-	return &Handler{
+func NewMockHandler() *KinesisHandler {
+	return &KinesisHandler{
 		kc: NewMockKinesisClient(),
 	}
 }
 
-func (h *Handler) Start() error {
+func (h *KinesisHandler) Start() error {
 	return nil
 }
 
-func (h *Handler) Shutdown() error {
+func (h *KinesisHandler) Shutdown() error {
 	return nil
 }
 
-func (h *Handler) ProcessMessage(r, partition string) {
+func (h *KinesisHandler) ProcessMessage(r, partition string) {
 	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "kinesis", "function": "ProcessMessage"})
 	_, err := h.kc.PutRecord(&kinesis.PutRecordInput{
 		Data:         []byte(r),
