@@ -13,7 +13,7 @@ func init() {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 	}
 	log = logrus.New()
-	if c.LogDebug {
+	if c.DebugMode {
 		log.SetLevel(logrus.DebugLevel)
 	}
 }
