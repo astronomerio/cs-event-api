@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/spf13/viper"
 )
@@ -33,6 +34,11 @@ var AppConfig Configuration
 func init() {
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
+
+	if sandboxPath, ok := os.LookupEnv("MESOS_SANDBOX"); ok {
+		viper.AddConfigPath(sandboxPath)
+	}
+
 	viper.AutomaticEnv()
 
 	setDefaults()
