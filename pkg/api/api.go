@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -11,43 +10,42 @@ import (
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/api/routes"
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/api/v1"
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion"
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/logger"
 
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 )
 
-type APIServer struct {
+type Server struct {
 	RouteHandlers []routes.RouteHandler
 
 	router     *gin.Engine
-	httpserver *http.Server
+	httpServer *http.Server
 
 	adminRouter     *gin.Engine
-	adminHttpserver *http.Server
+	adminHttpServer *http.Server
 
-	config *APIServerConfig
+	config *ServerConfig
 
 	healthy                bool
 	shouldStartAdminServer bool
 }
 
-type APIServerConfig struct {
+type ServerConfig struct {
 	APIPort   string
 	AdminPort string
 
 	APIInterface   string
 	AdminInterface string
 
-	IngestionHandler ingestion.IngestionHandler
+	IngestionHandler ingestion.Handler
 
 	GracefulShutdownDelay int
-
-	Logger logger.Logger
 }
 
-func NewServer() *APIServer {
-	s := APIServer{
+func NewServer() *Server {
+	s := Server{
 		router:                 gin.New(),
 		adminRouter:            gin.New(),
 		healthy:                false,
@@ -58,13 +56,13 @@ func NewServer() *APIServer {
 }
 
 // WithConfig sets the servers config
-func (s *APIServer) WithConfig(config *APIServerConfig) *APIServer {
+func (s *Server) WithConfig(config *ServerConfig) *Server {
 	s.config = config
 	return s
 }
 
 // WithDefaultRoutes adds the default routes we will always want
-func (s *APIServer) WithDefaultRoutes() *APIServer {
+func (s *Server) WithDefaultRoutes() *Server {
 	s.RouteHandlers = append(s.RouteHandlers, v1.NewRouteHandler())
 	return s
 }
@@ -72,38 +70,40 @@ func (s *APIServer) WithDefaultRoutes() *APIServer {
 // WithHealthCheck creates a http route to report the health of the http server.
 // Generally used to report a bad status when shutting down; to allow LB's to gracefully
 // remove it from the pool
-func (s *APIServer) WithHealthCheck() *APIServer {
+func (s *Server) WithHealthCheck() *Server {
 	s.adminRouter.GET("/health", s.HealthCheckHandler)
 	s.shouldStartAdminServer = true
 	return s
 }
 
 // WithPProf injects a middleware handler for pprof on the admin router
-func (s *APIServer) WithPProf() *APIServer {
+func (s *Server) WithPProf() *Server {
 	pprof.Register(s.adminRouter, nil)
 	s.shouldStartAdminServer = true
 	return s
 }
 
 // WithPrometheusMonitoring injects a middleware handler that will hook into the prometheus client
-func (s *APIServer) WithPrometheusMonitoring() *APIServer {
+func (s *Server) WithPrometheusMonitoring() *Server {
 	prometheus.Register(s.adminRouter, s.router)
 	s.shouldStartAdminServer = true
 	return s
 }
 
-func (s *APIServer) WithRequestID() *APIServer {
+func (s *Server) WithRequestID() *Server {
 	s.router.Use(RequestIdMiddleware())
 	return s
 }
 
 // Run starts the http server(s) and then listens for the shutdown signal
-func (s *APIServer) Run() {
+func (s *Server) Run() {
+	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "api", "function": "Run"})
+
 	if os.ExpandEnv("GIN_MODE") == gin.ReleaseMode {
 		gin.DisableConsoleColor()
 	}
 
-	s.httpserver = &http.Server{
+	s.httpServer = &http.Server{
 		Addr:    s.config.APIInterface + ":" + s.config.APIPort,
 		Handler: s.router,
 	}
@@ -118,20 +118,21 @@ func (s *APIServer) Run() {
 	}
 
 	if s.shouldStartAdminServer {
-		s.adminHttpserver = &http.Server{
+		logger.Info("starting administrative server")
+		s.adminHttpServer = &http.Server{
 			Addr:    s.config.AdminInterface + ":" + s.config.AdminPort,
 			Handler: s.adminRouter,
 		}
 		go func() {
-			if err := s.adminHttpserver.ListenAndServe(); err != nil {
-				log.Fatalf("listen adminHttpserver: %s\n", err)
+			if err := s.adminHttpServer.ListenAndServe(); err != nil {
+				logger.Fatalf("listen adminHttpServer: %s\n", err)
 			}
 		}()
 	}
 
 	go func() {
-		if err := s.httpserver.ListenAndServe(); err != nil {
-			log.Fatalf("listen httpserver: %s\n", err)
+		if err := s.httpServer.ListenAndServe(); err != nil {
+			logger.Fatalf("listen httpserver: %s\n", err)
 		}
 	}()
 
@@ -141,24 +142,24 @@ func (s *APIServer) Run() {
 
 	<-quit
 
-	log.Println("Shutdown signal received. Gracefully shutting down...")
+	logger.Info("Shutdown signal received. Gracefully shutting down...")
 
 	s.SetUnhealthy()
 	sleepDuration := time.Duration(s.config.GracefulShutdownDelay) * time.Second
 
-	log.Printf("Sleeping for %s...\n", sleepDuration.String())
+	logger.Infof("Sleeping for %s...\n", sleepDuration.String())
 	time.Sleep(sleepDuration)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := s.httpserver.Shutdown(ctx); err != nil {
-		log.Fatal("Server Shutdown:", err)
+	if err := s.httpServer.Shutdown(ctx); err != nil {
+		logger.Fatal("server shutdown:", err)
 	}
 
 	if s.shouldStartAdminServer {
-		if err := s.adminHttpserver.Shutdown(ctx); err != nil {
-			log.Fatal("admin http Server Shutdown:", err)
+		if err := s.adminHttpServer.Shutdown(ctx); err != nil {
+			logger.Fatal("admin http server shutdown:", err)
 		}
 	}
 }

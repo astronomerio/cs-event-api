@@ -1,37 +1,39 @@
 package ingestion
 
 import (
-	"log"
-
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion/kafka"
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion/kinesis"
+	"github.com/sirupsen/logrus"
+	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 )
 
-type IngestionHandler interface {
+type Handler interface {
 	ProcessMessage(string, string)
 	Start() error
 	Shutdown() error
 }
 
-func NewHandler(kind string) IngestionHandler {
-	handlers := map[string]func() IngestionHandler{
-		"kinesis": func() IngestionHandler {
-			return kinesis.NewKinesisIngestionHandler()
+func NewHandler(kind string) Handler {
+	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "api", "function": "NewHandler"})
+
+	handlers := map[string]func() Handler{
+		"kinesis": func() Handler {
+			return kinesis.NewHandler()
 		},
-		"mock-kinesis": func() IngestionHandler {
-			return kinesis.NewMockKinesisIngestionHandler()
+		"mock-kinesis": func() Handler {
+			return kinesis.NewMockHandler()
 		},
-		"localstack": func() IngestionHandler {
-			return kinesis.NewMockKinesisLocalStackIngestionHandler()
+		"localstack": func() Handler {
+			return kinesis.NewMockLocalStackHandler()
 		},
-		"kafka": func() IngestionHandler {
-			return kafka.NewKafkaIngestionHandler()
+		"kafka": func() Handler {
+			return kafka.NewHandler()
 		},
 	}
 
 	f, ok := handlers[kind]
 	if !ok {
-		log.Fatal("invalid ingestion handler")
+		logger.Fatal("invalid ingestion handler")
 	}
 
 	return f()

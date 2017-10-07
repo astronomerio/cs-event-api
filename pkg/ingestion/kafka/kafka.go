@@ -1,72 +1,72 @@
 package kafka
 
 import (
-	"fmt"
-	"log"
 	"strings"
 
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/config"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/sirupsen/logrus"
+	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 )
 
-type KafkaIngestionHandler struct {
+type KafkaHandler struct {
 	producer *kafka.Producer
 	topic    string
 }
 
 var appConfig = config.Get()
 
-func NewKafkaIngestionHandler() *KafkaIngestionHandler {
+func NewHandler() *KafkaHandler {
+	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka", "function": "NewHandler"})
 	// https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 	cfg := &kafka.ConfigMap{
 		"bootstrap.servers": strings.Join(appConfig.KafkaBrokers, ","),
 	}
 	producer, err := kafka.NewProducer(cfg)
 	if err != nil {
-		log.Fatalf("Failed to create kafka client: %s\n", err)
+		logger.Fatalf("failed to create kafka client: %s\n", err)
 	}
-	h := KafkaIngestionHandler{
+	h := KafkaHandler {
 		producer: producer,
 		topic:    appConfig.KafkaTopic,
 	}
 	return &h
 }
 
-func (h *KafkaIngestionHandler) Start() error {
+func (h *KafkaHandler) Start() error {
 	h.startEventListener()
 	return nil
 }
 
-func (h *KafkaIngestionHandler) Shutdown() error {
+func (h *KafkaHandler) Shutdown() error {
 	h.producer.Flush(10 * 1000)
 	h.producer.Close()
 	return nil
 }
 
-func (h *KafkaIngestionHandler) startEventListener() {
+func (h *KafkaHandler) startEventListener() {
+	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka", "function": "startEventListener"})
 	go func() {
 		for e := range h.producer.Events() {
 			switch ev := e.(type) {
 			case *kafka.Message:
 				m := ev
 				if m.TopicPartition.Error != nil {
-					fmt.Printf("Delivery failed: %v\n", m.TopicPartition.Error)
+					logger.Infof("Delivery failed: %v\n", m.TopicPartition.Error)
 				} else {
-					if appConfig.DebugMode {
-						fmt.Printf("Delivered message to topic %s [%d] at offset %v\n",
-							*m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset)
-					}
+					logger.Debugf("delivered message to topic %s [%d] at offset %v\n",
+						*m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset)
 				}
 			default:
-				fmt.Printf("Ignored event: %s\n", ev)
+				logger.Infof("ignored event: %s\n", ev)
 			}
 		}
 	}()
 }
 
-func (h *KafkaIngestionHandler) ProcessMessage(message, partition string) {
-	kmessage := &kafka.Message{
+func (h *KafkaHandler) ProcessMessage(message, partition string) {
+	msg := &kafka.Message{
 		TopicPartition: kafka.TopicPartition{
 			Topic:     &h.topic,
 			Partition: kafka.PartitionAny,
@@ -74,5 +74,5 @@ func (h *KafkaIngestionHandler) ProcessMessage(message, partition string) {
 		Key:   []byte(partition),
 		Value: []byte(message),
 	}
-	h.producer.ProduceChannel() <- kmessage
+	h.producer.ProduceChannel() <- msg
 }

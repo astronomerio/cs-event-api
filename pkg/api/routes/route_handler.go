@@ -2,7 +2,6 @@ package routes
 
 import (
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion"
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,11 +12,10 @@ type RouteHandler interface {
 }
 
 type HandlerConfig struct {
-	IngestionHandler ingestion.IngestionHandler
-	Logger           logger.Logger
+	IngestionHandler ingestion.Handler
 }
 
-type RouteDefintion struct {
+type RouteDefinition struct {
 	Method  string
 	Path    string
 	Handler gin.HandlerFunc

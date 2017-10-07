@@ -4,15 +4,13 @@ import (
 	"testing"
 
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion"
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )
 
 func TestRouteHandler_Register(t *testing.T) {
 	type fields struct {
-		ingestionHandler ingestion.IngestionHandler
-		logger           logger.Logger
+		ingestionHandler ingestion.Handler
 	}
 	type args struct {
 		router *gin.Engine
@@ -28,7 +26,6 @@ func TestRouteHandler_Register(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &RouteHandler{
 				ingestionHandler: tt.fields.ingestionHandler,
-				logger:           tt.fields.logger,
 			}
 			h.Register(tt.args.router)
 		})

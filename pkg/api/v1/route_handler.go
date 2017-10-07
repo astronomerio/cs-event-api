@@ -3,13 +3,11 @@ package v1
 import (
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/api/routes"
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion"
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/logger"
 	"github.com/gin-gonic/gin"
 )
 
 type RouteHandler struct {
-	ingestionHandler ingestion.IngestionHandler
-	logger           logger.Logger
+	ingestionHandler ingestion.Handler
 }
 
 func NewRouteHandler() *RouteHandler {
@@ -18,7 +16,6 @@ func NewRouteHandler() *RouteHandler {
 
 func (h *RouteHandler) WithConfig(config *routes.HandlerConfig) {
 	h.ingestionHandler = config.IngestionHandler
-	h.logger = config.Logger
 }
 
 func (h *RouteHandler) Register(router *gin.Engine) {
