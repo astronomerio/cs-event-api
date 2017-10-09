@@ -15,6 +15,8 @@ func init() {
 	log = logrus.New()
 	if c.DebugMode {
 		log.SetLevel(logrus.DebugLevel)
+	} else {
+		log.SetLevel(logrus.InfoLevel)
 	}
 }
 
