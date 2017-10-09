@@ -16,6 +16,7 @@ type KafkaHandler struct {
 }
 
 var appConfig = config.Get()
+var isRunning = false
 
 func NewHandler() *KafkaHandler {
 	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka", "function": "NewHandler"})
@@ -48,24 +49,29 @@ func (h *KafkaHandler) Shutdown() error {
 func (h *KafkaHandler) startEventListener() {
 	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka", "function": "startEventListener"})
 	go func() {
-		for e := range h.producer.Events() {
+		isRunning = true
+		defer func(){
+			isRunning = false
+		}()
+		for e := range h.producer.Events(){
 			switch ev := e.(type) {
 			case *kafka.Message:
 				m := ev
 				if m.TopicPartition.Error != nil {
-					logger.Infof("Delivery failed: %v\n", m.TopicPartition.Error)
+					logger.Errorf("Delivery failed: %v\n", m.TopicPartition.Error)
 				} else {
 					logger.Debugf("delivered message to topic %s [%d] at offset %v\n",
 						*m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset)
 				}
 			default:
-				logger.Infof("ignored event: %s\n", ev)
+				logger.Errorf("non kafka message found in event stream: %s\n", ev)
 			}
 		}
 	}()
 }
 
 func (h *KafkaHandler) ProcessMessage(message, partition string) {
+	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka", "function": "ProcessMessage"})
 	msg := &kafka.Message{
 		TopicPartition: kafka.TopicPartition{
 			Topic:     &h.topic,
@@ -74,5 +80,13 @@ func (h *KafkaHandler) ProcessMessage(message, partition string) {
 		Key:   []byte(partition),
 		Value: []byte(message),
 	}
-	h.producer.ProduceChannel() <- msg
+
+	if isRunning != true {
+		logger.Error("event listener isn't active")
+	} else {
+		err := h.producer.Produce(msg, h.producer.Events())
+		if err != nil {
+			logger.Errorf("unable to produce %f", err.Error())
+		}
+	}
 }

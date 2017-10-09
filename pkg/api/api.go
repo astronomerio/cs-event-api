@@ -111,6 +111,7 @@ func (s *Server) Run() {
 	handlerConfig := &routes.HandlerConfig{
 		IngestionHandler: s.config.IngestionHandler,
 	}
+	handlerConfig.IngestionHandler.Start()
 
 	for _, handler := range s.RouteHandlers {
 		handler.Register(s.router)
