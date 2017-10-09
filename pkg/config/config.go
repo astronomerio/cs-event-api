@@ -41,8 +41,6 @@ func init() {
 		viper.AddConfigPath(sandboxPath)
 	}
 
-	viper.AutomaticEnv()
-
 	setDefaults()
 
 	AppConfig = Configuration{}
@@ -50,6 +48,20 @@ func init() {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalf("Error reading config file, %s", err)
 	}
+
+	viper.SetEnvPrefix("ingestion")
+	viper.AutomaticEnv()
+
+	viper.Set("AdminPort", viper.GetString("admin_port"))
+	viper.Set("APIPort", viper.GetString("api_port"))
+	viper.Set("PrometheusEnabled", viper.GetBool("enable_prometheus"))
+	viper.Set("DebugMode", viper.GetBool("debug_mode"))
+	viper.Set("AdminInterface", viper.GetString("admin_interface"))
+	viper.Set("HealthCheckEnabled", viper.GetBool("enable_health_check"))
+	viper.Set("GracefulShutdownDelay", viper.GetInt("graceful_shutdown"))
+	viper.Set("APIInterface", viper.GetString("api_interface"))
+	viper.Set("PProfEnabled", viper.GetBool("enable_pprof"))
+
 
 	if err := viper.Unmarshal(&AppConfig); err != nil {
 		log.Fatalf("unable to decode into struct, %v", err)
