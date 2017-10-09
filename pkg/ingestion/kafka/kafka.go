@@ -57,7 +57,6 @@ func (h *KafkaHandler) startEventListener() {
 			switch ev := e.(type) {
 			case *kafka.Message:
 				m := ev
-				logger.Infof("TopicAndPartition = [%s], message = [%s]", ev.TopicPartition.String(), ev.String())
 				if m.TopicPartition.Error != nil {
 					logger.Errorf("Delivery failed: %v\n", m.TopicPartition.Error)
 				} else {
