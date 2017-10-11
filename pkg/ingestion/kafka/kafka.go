@@ -8,6 +8,7 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/sirupsen/logrus"
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
+	"encoding/json"
 )
 
 type KafkaHandler struct {
@@ -23,6 +24,7 @@ func NewHandler() *KafkaHandler {
 	// https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 	cfg := &kafka.ConfigMap{
 		"bootstrap.servers": strings.Join(appConfig.KafkaBrokers, ","),
+		"statistics.interval.ms": 500,
 	}
 	producer, err := kafka.NewProducer(cfg)
 	if err != nil {
@@ -55,6 +57,14 @@ func (h *KafkaHandler) startEventListener() {
 		}()
 		for e := range h.producer.Events(){
 			switch ev := e.(type) {
+			case *kafka.Stats:
+				// test if the stats string can be decoded into JSON
+				var raw map[string]interface{}
+				err := json.Unmarshal([]byte(e.String()), &raw) // convert string to json
+				if err != nil {
+					logger.Fatalf("json unmarshal error: %s", err)
+				}
+				logger.Debugf("Stats['name']: %s", raw["name"])
 			case *kafka.Message:
 				m := ev
 				if m.TopicPartition.Error != nil {
