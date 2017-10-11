@@ -9,6 +9,9 @@ jobs:
       - run: go get -v -t -d ./...
       - run: go test -v ./...
   build:
+    docker:
+    - image: astronomerio/alpine-librdkafka-golang:1.9-0.11.0-r0
+    working_directory: /go/src/github.com/astronomerio/clickstream-ingestion-api
     requires:
       - test
     steps:
@@ -17,6 +20,9 @@ jobs:
         docker login -u $DOCKER_USER -p $DOCKER_PASS 
         VERSION=$CIRCLE_TAG make build-image
   push:
+    docker:
+    - image: astronomerio/alpine-librdkafka-golang:1.9-0.11.0-r0
+    working_directory: /go/src/github.com/astronomerio/clickstream-ingestion-api
     requires:
       - test
       - build
