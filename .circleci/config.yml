@@ -8,9 +8,8 @@ jobs:
       - test
     steps:
       - setup_remote_docker
-      - run: |
-        docker login -u $DOCKER_USER -p $DOCKER_PASS 
-        VERSION=$CIRCLE_TAG make build-image
+      - run: docker login -u $DOCKER_USER -p $DOCKER_PASS 
+      - run: VERSION=$CIRCLE_TAG make build-image
   test:
     docker:
     - image: astronomerio/alpine-librdkafka-golang:1.9-0.11.0-r0
@@ -27,8 +26,7 @@ jobs:
       - test
       - build
     steps:
-      - run: |
-        VERSION=$CIRCLE_TAG make push-image
+      - run: VERSION=$CIRCLE_TAG make push-image
       
 workflows:
   version: 2
@@ -40,7 +38,7 @@ workflows:
       - test
       - build
       - release
-      filters:
-        tags:
-          only: /.*/
-    
+    filters:
+      tags:
+        only: /.*/
+  
