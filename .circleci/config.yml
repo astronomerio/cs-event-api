@@ -27,7 +27,6 @@ jobs:
       - build
     steps:
       - run: VERSION=$CIRCLE_TAG make push-image
-      
 workflows:
   version: 2
   test:
