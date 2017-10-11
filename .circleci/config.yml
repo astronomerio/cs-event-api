@@ -10,7 +10,7 @@ jobs:
       - run: go test -v ./...
   build:
     machine: true
-    working_directory: /go/src/github.com/astronomerio/clickstream-ingestion-api
+    working_directory: ~/go/src/github.com/astronomerio/clickstream-ingestion-api
     requires:
       - test
     steps:
@@ -19,7 +19,7 @@ jobs:
       - run: VERSION=$CIRCLE_TAG make build-image
   release:
     machine: true
-    working_directory: /go/src/github.com/astronomerio/clickstream-ingestion-api
+    working_directory: ~/go/src/github.com/astronomerio/clickstream-ingestion-api
     requires:
       - test
       - build
