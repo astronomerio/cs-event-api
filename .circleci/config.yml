@@ -36,10 +36,10 @@ workflows:
            - test
           filters:
             tags:
-              only: /.*/
+              only: /v.*/
       - release:
           requires:
            - build
           filters:
             tags:
-              only: /.*/
+              only: /v.*/
