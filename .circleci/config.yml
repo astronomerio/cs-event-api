@@ -15,8 +15,7 @@ jobs:
       - setup_remote_docker
       - run: |
         docker login -u $DOCKER_USER -p $DOCKER_PASS 
-        make build-image
-        make push-image
+        VERSION=$CIRCLE_TAG make build-image
   push:
     requires:
       - test
