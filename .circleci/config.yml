@@ -9,6 +9,8 @@ jobs:
       - run: go get -v -t -d ./...
       - run: go test -v ./...
   build:
+    requires:
+      - test
     steps:
       - setup_remote_docker
       - run: |
