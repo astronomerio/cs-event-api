@@ -1,14 +1,5 @@
 version: 2
 jobs:
-  build:
-    machine: true
-    working_directory: /go/src/github.com/astronomerio/clickstream-ingestion-api
-    requires:
-      - test
-    steps:
-      - setup_remote_docker
-      - run: docker login -u $DOCKER_USER -p $DOCKER_PASS 
-      - run: VERSION=$CIRCLE_TAG make build-image
   test:
     docker:
     - image: astronomerio/alpine-librdkafka-golang:1.9-0.11.0-r0
@@ -17,6 +8,15 @@ jobs:
       - checkout
       - run: go get -v -t -d ./...
       - run: go test -v ./...
+  build:
+    machine: true
+    working_directory: /go/src/github.com/astronomerio/clickstream-ingestion-api
+    requires:
+      - test
+    steps:
+      - checkout
+      - run: docker login -u $DOCKER_USER -p $DOCKER_PASS 
+      - run: VERSION=$CIRCLE_TAG make build-image
   release:
     machine: true
     working_directory: /go/src/github.com/astronomerio/clickstream-ingestion-api
@@ -24,6 +24,7 @@ jobs:
       - test
       - build
     steps:
+      - checkout
       - run: VERSION=$CIRCLE_TAG make push-image
 workflows:
   version: 2
