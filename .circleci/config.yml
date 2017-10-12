@@ -8,7 +8,7 @@ jobs:
       - checkout
       - run: go get -v -t -d ./...
       - run: go test -v ./...
-  build:
+  release:
     machine:
       image: circleci/classic:edge
     working_directory: ~/go/src/github.com/astronomerio/clickstream-ingestion-api
@@ -18,15 +18,6 @@ jobs:
       - checkout
       - run: docker login -u $DOCKER_USER -p $DOCKER_PASS 
       - run: VERSION=$CIRCLE_TAG make build-image
-  release:
-    machine:
-      image: circleci/classic:edge
-    working_directory: ~/go/src/github.com/astronomerio/clickstream-ingestion-api
-    requires:
-      - test
-      - build
-    steps:
-      - checkout
       - run: VERSION=$CIRCLE_TAG make push-image
 workflows:
   version: 2
@@ -36,17 +27,9 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - build:
-          requires:
-           - test
-          filters:
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*.*/
-            branches:
-              ignore: /.*/
       - release:
           requires:
-           - build
+           - test
           filters:
             tags:
               only: /v[0-9]+(\.[0-9]+)*.*/
