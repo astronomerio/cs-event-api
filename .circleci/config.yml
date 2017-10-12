@@ -9,7 +9,8 @@ jobs:
       - run: go get -v -t -d ./...
       - run: go test -v ./...
   build:
-    machine: true
+    machine:
+      image: circleci/classic:edge
     working_directory: ~/go/src/github.com/astronomerio/clickstream-ingestion-api
     requires:
       - test
@@ -18,7 +19,8 @@ jobs:
       - run: docker login -u $DOCKER_USER -p $DOCKER_PASS 
       - run: VERSION=$CIRCLE_TAG make build-image
   release:
-    machine: true
+    machine:
+      image: circleci/classic:edge
     working_directory: ~/go/src/github.com/astronomerio/clickstream-ingestion-api
     requires:
       - test
