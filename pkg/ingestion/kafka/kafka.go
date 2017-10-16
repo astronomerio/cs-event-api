@@ -25,6 +25,8 @@ func NewHandler() *KafkaHandler {
 	cfg := &kafka.ConfigMap{
 		"bootstrap.servers": strings.Join(appConfig.KafkaBrokers, ","),
 		"statistics.interval.ms": 500,
+		"request.required.acks": -1,
+		"message.timeout.ms": 5000,
 	}
 	producer, err := kafka.NewProducer(cfg)
 	if err != nil {
@@ -64,11 +66,11 @@ func (h *KafkaHandler) startEventListener() {
 				if err != nil {
 					logger.Fatalf("json unmarshal error: %s", err)
 				}
-				logger.Debugf("Stats['name']: %s", raw["name"])
 			case *kafka.Message:
 				m := ev
 				if m.TopicPartition.Error != nil {
-					logger.Errorf("Delivery failed: %v\n", m.TopicPartition.Error)
+					logger.Errorf("delivery failed: %v", m.TopicPartition.Error)
+
 				} else {
 					logger.Debugf("delivered message to topic %s [%d] at offset %v",
 						*m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset)
