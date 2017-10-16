@@ -41,7 +41,6 @@ func init() {
 		viper.AddConfigPath(sandboxPath)
 	}
 
-	setDefaults()
 
 	AppConfig = Configuration{}
 
@@ -52,17 +51,36 @@ func init() {
 	viper.SetEnvPrefix("ingestion")
 	viper.AutomaticEnv()
 
-	viper.Set("AdminPort", viper.GetString("admin_port"))
-	viper.Set("APIPort", viper.GetString("api_port"))
-	viper.Set("PrometheusEnabled", viper.GetBool("enable_prometheus"))
-	viper.Set("DebugMode", viper.GetBool("debug_mode"))
-	viper.Set("AdminInterface", viper.GetString("admin_interface"))
-	viper.Set("HealthCheckEnabled", viper.GetBool("enable_health_check"))
-	viper.Set("GracefulShutdownDelay", viper.GetInt("graceful_shutdown"))
-	viper.Set("APIInterface", viper.GetString("api_interface"))
-	viper.Set("PProfEnabled", viper.GetBool("enable_pprof"))
+	if viper.Get("admin_port") != nil {
+		viper.Set("AdminPort", viper.GetString("admin_port"))
+	}
+	if viper.Get("api_port") != nil {
+		viper.Set("APIPort", viper.GetString("api_port"))
+	}
+	if viper.Get("enable_prometheus") != nil {
+		viper.Set("PrometheusEnabled", viper.GetBool("enable_prometheus"))
+	}
+	if viper.Get("debug_mode") != nil {
+		viper.Set("DebugMode", viper.GetBool("debug_mode"))
+	}
+	if viper.Get("api_interface") != nil {
+		viper.Set("APIInterface", viper.GetString("api_interface"))
+	}
+	if viper.Get("admin_interface") != nil {
+		viper.Set("AdminInterface", viper.GetString("admin_interface"))
+	}
+	if viper.Get("enable_health_check") != nil {
+		viper.Set("HealthCheckEnabled", viper.GetBool("enable_health_check"))
+	}
+	if viper.Get("graceful_shutdown") != nil {
+		viper.Set("GracefulShutdownDelay", viper.GetInt("graceful_shutdown"))
+	}
+	if viper.Get("enable_pprof") != nil {
+		viper.Set("PProfEnabled", viper.GetBool("enable_pprof"))
+	}
 
 
+	setDefaults()
 	if err := viper.Unmarshal(&AppConfig); err != nil {
 		log.Fatalf("unable to decode into struct, %v", err)
 	}
@@ -88,7 +106,7 @@ func Get() *Configuration {
 
 // Print prints the configuration to stdout
 func (c *Configuration) Print() {
-	fmt.Println("=================")
+	fmt.Println("Configurations:")
 	fmt.Printf("IngestionHandler: %s\n", c.IngestionHandler)
 	fmt.Printf("StreamName: %s\n", c.StreamName)
 	fmt.Printf("KafkaTopic: %s\n", c.KafkaTopic)
@@ -99,5 +117,7 @@ func (c *Configuration) Print() {
 	fmt.Printf("APIPort: %s\n", c.APIPort)
 	fmt.Printf("AdminPort: %s\n", c.AdminPort)
 	fmt.Printf("GracefulShutdownDelay: %d\n", c.GracefulShutdownDelay)
-	fmt.Println("=================")
+	fmt.Printf("AdminInterface: %s\n", c.AdminInterface)
+	fmt.Printf("ApiInterface: %s\n", c.APIInterface)
+	fmt.Printf("DebugMode: %b\n", c.DebugMode)
 }
