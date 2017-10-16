@@ -70,7 +70,7 @@ func (h *KafkaHandler) startEventListener() {
 				if m.TopicPartition.Error != nil {
 					logger.Errorf("Delivery failed: %v\n", m.TopicPartition.Error)
 				} else {
-					logger.Debugf("delivered message to topic %s [%d] at offset %v\n",
+					logger.Debugf("delivered message to topic %s [%d] at offset %v",
 						*m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset)
 				}
 			default:
