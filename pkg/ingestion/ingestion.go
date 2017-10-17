@@ -3,8 +3,8 @@ package ingestion
 import (
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion/kafka"
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion/kinesis"
-	"github.com/sirupsen/logrus"
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
+	"github.com/sirupsen/logrus"
 )
 
 type Handler interface {

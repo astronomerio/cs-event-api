@@ -11,10 +11,12 @@ import (
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/api/v1"
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion"
 
+	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
+	"os/signal"
+	"syscall"
 )
 
 type Server struct {
@@ -111,6 +113,7 @@ func (s *Server) Run() {
 	handlerConfig := &routes.HandlerConfig{
 		IngestionHandler: s.config.IngestionHandler,
 	}
+
 	handlerConfig.IngestionHandler.Start()
 
 	for _, handler := range s.RouteHandlers {
@@ -139,28 +142,38 @@ func (s *Server) Run() {
 
 	s.SetHealthy()
 
-	quit := setupSignalHandler()
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGSTOP, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGKILL)
+	logger.Info(<-c)
+	s.stop(handlerConfig.IngestionHandler)
+	os.Exit(1)
+}
 
-	<-quit
-
+func (s *Server) stop(ingestionHandler ingestion.Handler) {
+	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "api", "function": "stop"})
 	logger.Info("Shutdown signal received. Gracefully shutting down...")
-
 	s.SetUnhealthy()
 	sleepDuration := time.Duration(s.config.GracefulShutdownDelay) * time.Second
 
-	logger.Infof("Sleeping for %s...\n", sleepDuration.String())
+	logger.Infof("Sleeping for %s...", sleepDuration.String())
 	time.Sleep(sleepDuration)
+
+	err := ingestionHandler.Shutdown()
+	if err != nil {
+		logger.Errorf("error shutting down ingestion handler %s", err.Error())
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := s.httpServer.Shutdown(ctx); err != nil {
-		logger.Fatal("server shutdown:", err)
+		logger.Errorf("server shutdown: %s", err.Error())
 	}
 
 	if s.shouldStartAdminServer {
 		if err := s.adminHttpServer.Shutdown(ctx); err != nil {
-			logger.Fatal("admin http server shutdown:", err)
+			logger.Errorf("admin http server shutdown: %s", err.Error())
 		}
 	}
+
 }

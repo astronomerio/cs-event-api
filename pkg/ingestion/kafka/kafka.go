@@ -5,10 +5,12 @@ import (
 
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/config"
 
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/sirupsen/logrus"
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
-	"encoding/json"
 )
 
 type KafkaHandler struct {
@@ -23,16 +25,16 @@ func NewHandler() *KafkaHandler {
 	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka", "function": "NewHandler"})
 	// https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 	cfg := &kafka.ConfigMap{
-		"bootstrap.servers": strings.Join(appConfig.KafkaBrokers, ","),
+		"bootstrap.servers":      strings.Join(appConfig.KafkaBrokers, ","),
 		"statistics.interval.ms": 500,
-		"request.required.acks": -1,
-		"message.timeout.ms": 5000,
+		"request.required.acks":  -1,
+		"message.timeout.ms":     5000,
 	}
 	producer, err := kafka.NewProducer(cfg)
 	if err != nil {
 		logger.Fatalf("failed to create kafka client: %s\n", err)
 	}
-	h := KafkaHandler {
+	h := KafkaHandler{
 		producer: producer,
 		topic:    appConfig.KafkaTopic,
 	}
@@ -45,7 +47,12 @@ func (h *KafkaHandler) Start() error {
 }
 
 func (h *KafkaHandler) Shutdown() error {
-	h.producer.Flush(10 * 1000)
+	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka", "function": "Shutdown"})
+	logger.Info("shutting down Kafka handler")
+	msgs := h.producer.Flush(5000)
+	if msgs != 0 {
+		return errors.New(fmt.Sprintf("%d messages were not flushed after a timeout of %d", msgs, 10*1000))
+	}
 	h.producer.Close()
 	return nil
 }
@@ -54,10 +61,10 @@ func (h *KafkaHandler) startEventListener() {
 	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka", "function": "startEventListener"})
 	go func() {
 		isRunning = true
-		defer func(){
+		defer func() {
 			isRunning = false
 		}()
-		for e := range h.producer.Events(){
+		for e := range h.producer.Events() {
 			switch ev := e.(type) {
 			case *kafka.Stats:
 				// test if the stats string can be decoded into JSON
