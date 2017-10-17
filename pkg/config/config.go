@@ -41,7 +41,6 @@ func init() {
 		viper.AddConfigPath(sandboxPath)
 	}
 
-
 	AppConfig = Configuration{}
 
 	if err := viper.ReadInConfig(); err != nil {
@@ -79,7 +78,6 @@ func init() {
 		viper.Set("PProfEnabled", viper.GetBool("enable_pprof"))
 	}
 
-
 	setDefaults()
 	if err := viper.Unmarshal(&AppConfig); err != nil {
 		log.Fatalf("unable to decode into struct, %v", err)
@@ -90,7 +88,7 @@ func setDefaults() {
 	viper.SetDefault("PProfEnabled", false)
 	viper.SetDefault("PrometheusEnabled", true)
 	viper.SetDefault("HealthCheckEnabled", true)
-	viper.SetDefault("GracefulShutdownDelay", 30)
+	viper.SetDefault("GracefulShutdownDelay", 10)
 	viper.SetDefault("APIPort", "8080")
 	viper.SetDefault("AdminPort", "8081")
 	viper.SetDefault("APIInterface", "0.0.0.0")
