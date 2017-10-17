@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion/failover"
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/sirupsen/logrus"
@@ -77,7 +78,7 @@ func (h *KafkaHandler) startEventListener() {
 				m := ev
 				if m.TopicPartition.Error != nil {
 					logger.Errorf("delivery failed: %v", m.TopicPartition.Error)
-
+					failover.UploadMessage(*m)
 				} else {
 					logger.Debugf("delivered message to topic %s [%d] at offset %v",
 						*m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset)

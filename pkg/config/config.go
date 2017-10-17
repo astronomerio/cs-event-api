@@ -29,6 +29,11 @@ type Configuration struct {
 	DebugMode bool
 
 	LogFormat string
+
+	FailOverBackend string
+	S3Bucket        string
+	S3Timeout       int
+	S3Region        string
 }
 
 var AppConfig Configuration
@@ -77,6 +82,12 @@ func init() {
 	if viper.Get("enable_pprof") != nil {
 		viper.Set("PProfEnabled", viper.GetBool("enable_pprof"))
 	}
+	if awsKey := os.Getenv("AWS_ACCESS_KEY_ID"); awsKey == "" {
+		log.Fatalf("set AWS_ACCESS_KEY_ID")
+	}
+	if awsKey := os.Getenv("AWS_SECRET_KEY"); awsKey == "" {
+		log.Fatalf("set AWS_SECRET_KEY")
+	}
 
 	setDefaults()
 	if err := viper.Unmarshal(&AppConfig); err != nil {
@@ -95,6 +106,10 @@ func setDefaults() {
 	viper.SetDefault("AdminInterface", "0.0.0.0")
 	viper.SetDefault("DebugMode", false)
 	viper.SetDefault("LogFormat", "json")
+	viper.SetDefault("FailOverBackend", "s3")
+	viper.SetDefault("S3Timeout", 10)
+	viper.SetDefault("S3Region", "us-east-1")
+	viper.SetDefault("S3Bucket", "ingestion-api-messages")
 }
 
 // Get returns the config
@@ -117,5 +132,7 @@ func (c *Configuration) Print() {
 	fmt.Printf("GracefulShutdownDelay: %d\n", c.GracefulShutdownDelay)
 	fmt.Printf("AdminInterface: %s\n", c.AdminInterface)
 	fmt.Printf("ApiInterface: %s\n", c.APIInterface)
-	fmt.Printf("DebugMode: %b\n", c.DebugMode)
+	fmt.Printf("DebugMode: %s\n", c.DebugMode)
+	fmt.Printf("FailoverBackend: %s", c.FailOverBackend)
+	fmt.Printf("S3Timeout: %d", c.S3Timeout)
 }
