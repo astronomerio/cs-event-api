@@ -3,11 +3,11 @@ package prometheus
 import (
 	"time"
 
+	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 )
 
 type prometheusInstrumentation struct {

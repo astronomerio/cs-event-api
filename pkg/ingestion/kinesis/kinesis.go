@@ -3,13 +3,13 @@ package kinesis
 import (
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/config"
 
+	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kinesis"
 	"github.com/aws/aws-sdk-go/service/kinesis/kinesisiface"
 	"github.com/sirupsen/logrus"
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 )
 
 type KinesisHandler struct {
@@ -24,7 +24,7 @@ func NewHandler() *KinesisHandler {
 		logger.Fatal(err)
 	}
 	h := &KinesisHandler{
-		kc:  kinesis.New(s),
+		kc: kinesis.New(s),
 	}
 	h.streamName = aws.String(config.Get().StreamName)
 	return h
