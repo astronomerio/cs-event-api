@@ -15,7 +15,5 @@ COPY --from=0 /go/src/github.com/astronomerio/clickstream-ingestion-api/server /
 ENV GIN_MODE=release
 EXPOSE 8080 8081
 
-ENTRYPOINT ./server
-
-
+ENTRYPOINT ["/server"]
 
