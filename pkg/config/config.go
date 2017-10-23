@@ -49,6 +49,7 @@ func init() {
 
 	AppConfig = Configuration{}
 
+	setDefaults()
 	if err := viper.ReadInConfig(); err != nil {
 		log.Printf("No log file present, %s \n", err)
 	}
@@ -77,6 +78,12 @@ func init() {
 	if viper.Get("enable_health_check") != nil {
 		viper.Set("HealthCheckEnabled", viper.GetBool("enable_health_check"))
 	}
+	if viper.Get("kafka_brokers") != nil {
+		viper.Set("KafkaBrokers", viper.GetString("kafka_brokers"))
+	}
+	if viper.Get("kafka_topic") != nil {
+		viper.Set("KafkaTopic", viper.GetString("kafka_topic"))
+	}
 	if viper.Get("graceful_shutdown") != nil {
 		viper.Set("GracefulShutdownDelay", viper.GetInt("graceful_shutdown"))
 	}
@@ -86,6 +93,9 @@ func init() {
 	if viper.Get("enable_failover") != nil {
 		viper.Set("EnableFailover", viper.GetBool("enable_failover"))
 	}
+	if viper.Get("ingestion_handler") != nil {
+		viper.Set("IngestionHandler", viper.GetString("ingestion_handler"))
+	}
 	if awsKeyID := os.Getenv("AWS_ACCESS_KEY_ID"); awsKeyID == "" {
 		log.Println("provide a valid AWS_ACCESS_KEY_ID")
 	}
@@ -93,7 +103,6 @@ func init() {
 		log.Println("provide a valid AWS_SECRET_KEY")
 	}
 
-	setDefaults()
 	if err := viper.Unmarshal(&AppConfig); err != nil {
 		log.Fatalf("unable to decode into struct, %v", err)
 	}
@@ -115,6 +124,7 @@ func setDefaults() {
 	viper.SetDefault("S3Region", "us-east-1")
 	viper.SetDefault("S3Bucket", "ingestion-api-messages")
 	viper.SetDefault("EnableFailover", true)
+	viper.SetDefault("IngestionHandler", "kafka")
 }
 
 // Get returns the config
