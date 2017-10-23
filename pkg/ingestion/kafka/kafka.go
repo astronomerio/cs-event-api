@@ -11,12 +11,39 @@ import (
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion/failover"
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 )
 
 type KafkaHandler struct {
 	producer *kafka.Producer
 	topic    string
+}
+
+var (
+	bytesOut = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "producer_message_out_bytes_total",
+		Help: "The number of bytes being produced to kafka brokers",
+	}, []string{"broker", "producer"})
+	requestRate = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "producer_requests_total",
+		Help: "Average number of requests",
+	}, []string{"broker", "producer"})
+	responseRate = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "producer_responses_total",
+		Help: "Average number of responses received",
+	}, []string{"broker", "producer"})
+	latency = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "producer_latency_ms",
+		Help: "Average request latency",
+	}, []string{"broker", "producer"})
+)
+
+func init() {
+	prometheus.MustRegister(bytesOut)
+	prometheus.MustRegister(requestRate)
+	prometheus.MustRegister(responseRate)
+	prometheus.MustRegister(latency)
 }
 
 var appConfig = config.Get()
@@ -30,6 +57,7 @@ func NewHandler() *KafkaHandler {
 		"statistics.interval.ms": 500,
 		"request.required.acks":  -1,
 		"message.timeout.ms":     5000,
+		"debug":                  "protocol,topic,msg",
 	}
 	producer, err := kafka.NewProducer(cfg)
 	if err != nil {
@@ -68,11 +96,16 @@ func (h *KafkaHandler) startEventListener() {
 		for e := range h.producer.Events() {
 			switch ev := e.(type) {
 			case *kafka.Stats:
-				// test if the stats string can be decoded into JSON
-				var raw map[string]interface{}
-				err := json.Unmarshal([]byte(e.String()), &raw) // convert string to json
+				var stats Stats
+				err := json.Unmarshal([]byte(e.String()), &stats)
 				if err != nil {
 					logger.Fatalf("json unmarshal error: %s", err)
+				}
+				for _, v := range stats.Brokers {
+					bytesOut.With(prometheus.Labels{"broker": v.Name, "producer": "ingestion-api"}).Set(float64(v.Rxbytes))
+					latency.With(prometheus.Labels{"broker": v.Name, "producer": "ingestion-api"}).Set(float64(v.Rtt.Avg))
+					responseRate.With(prometheus.Labels{"broker": v.Name, "producer": "ingestion-api"}).Set(float64(v.Rx))
+					requestRate.With(prometheus.Labels{"broker": v.Name, "producer": "ingestion-api"}).Set(float64(v.Tx))
 				}
 			case *kafka.Message:
 				m := ev
