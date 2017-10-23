@@ -111,7 +111,9 @@ func (h *KafkaHandler) startEventListener() {
 				m := ev
 				if m.TopicPartition.Error != nil {
 					logger.Errorf("delivery failed: %v", m.TopicPartition.Error)
-					failover.UploadMessage(*m)
+					if config.Get().EnableFailover == true {
+						failover.UploadMessage(*m)
+					}
 				} else {
 					logger.Debugf("delivered message to topic %s [%d] at offset %v",
 						*m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset)

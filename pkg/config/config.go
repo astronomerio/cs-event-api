@@ -30,6 +30,7 @@ type Configuration struct {
 
 	LogFormat string
 
+	EnableFailover  bool
 	FailOverBackend string
 	S3Bucket        string
 	S3Timeout       int
@@ -82,11 +83,14 @@ func init() {
 	if viper.Get("enable_pprof") != nil {
 		viper.Set("PProfEnabled", viper.GetBool("enable_pprof"))
 	}
-	if awsKey := os.Getenv("AWS_ACCESS_KEY_ID"); awsKey == "" {
+	if viper.Get("enable_failover") != nil {
+		viper.Set("EnableFailover", viper.GetBool("enable_failover"))
+	}
+	if awsKeyID := os.Getenv("AWS_ACCESS_KEY_ID"); awsKeyID == "" {
 		log.Println("provide a valid AWS_ACCESS_KEY_ID")
 	}
 	if awsKey := os.Getenv("AWS_SECRET_KEY"); awsKey == "" {
-		log.Println("provide a validAWS_SECRET_KEY")
+		log.Println("provide a valid AWS_SECRET_KEY")
 	}
 
 	setDefaults()
@@ -110,6 +114,7 @@ func setDefaults() {
 	viper.SetDefault("S3Timeout", 10)
 	viper.SetDefault("S3Region", "us-east-1")
 	viper.SetDefault("S3Bucket", "ingestion-api-messages")
+	viper.SetDefault("EnableFailover", true)
 }
 
 // Get returns the config
