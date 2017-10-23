@@ -96,11 +96,13 @@ func init() {
 	if viper.Get("ingestion_handler") != nil {
 		viper.Set("IngestionHandler", viper.GetString("ingestion_handler"))
 	}
-	if awsKeyID := os.Getenv("AWS_ACCESS_KEY_ID"); awsKeyID == "" {
-		log.Println("provide a valid AWS_ACCESS_KEY_ID")
-	}
-	if awsKey := os.Getenv("AWS_SECRET_KEY"); awsKey == "" {
-		log.Println("provide a valid AWS_SECRET_KEY")
+	if viper.Get("EnableFailover") == true {
+		if awsKeyID := os.Getenv("AWS_ACCESS_KEY_ID"); awsKeyID == "" {
+			log.Fatalf("provide a valid AWS_ACCESS_KEY_ID")
+		}
+		if awsKey := os.Getenv("AWS_SECRET_KEY"); awsKey == "" {
+			log.Fatalf("provide a valid AWS_SECRET_KEY")
+		}
 	}
 
 	if err := viper.Unmarshal(&AppConfig); err != nil {
