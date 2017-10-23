@@ -83,10 +83,10 @@ func init() {
 		viper.Set("PProfEnabled", viper.GetBool("enable_pprof"))
 	}
 	if awsKey := os.Getenv("AWS_ACCESS_KEY_ID"); awsKey == "" {
-		log.Fatalf("set AWS_ACCESS_KEY_ID")
+		log.Println("provide a valid AWS_ACCESS_KEY_ID")
 	}
 	if awsKey := os.Getenv("AWS_SECRET_KEY"); awsKey == "" {
-		log.Fatalf("set AWS_SECRET_KEY")
+		log.Println("provide a validAWS_SECRET_KEY")
 	}
 
 	setDefaults()
