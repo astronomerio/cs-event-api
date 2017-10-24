@@ -22,7 +22,7 @@ type KafkaHandler struct {
 
 var (
 	bytesOut = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "producer_message_out_bytes_total",
+		Name: "kafka_producer_message_out_bytes_total",
 		Help: "The number of bytes being produced to kafka brokers",
 	}, []string{"broker", "producer"})
 	requestRate = prometheus.NewGaugeVec(prometheus.GaugeOpts{
@@ -30,11 +30,11 @@ var (
 		Help: "Average number of requests",
 	}, []string{"broker", "producer"})
 	responseRate = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "producer_responses_total",
+		Name: "kafka_producer_responses_total",
 		Help: "Average number of responses received",
 	}, []string{"broker", "producer"})
 	latency = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "producer_latency_ms",
+		Name: "kafka_producer_latency_ms",
 		Help: "Average request latency",
 	}, []string{"broker", "producer"})
 )
