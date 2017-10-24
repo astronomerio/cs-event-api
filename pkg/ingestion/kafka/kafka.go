@@ -102,7 +102,7 @@ func (h *KafkaHandler) startEventListener() {
 				var stats Stats
 				err := json.Unmarshal([]byte(e.String()), &stats)
 				if err != nil {
-					logger.Fatalf("json unmarshal error: %s", err)
+					logger.Errorf("json unmarshal error: %s", err)
 				}
 				for _, v := range stats.Brokers {
 					bytesOut.With(prometheus.Labels{"broker": v.Name, "producer": "ingestion-api"}).Set(float64(v.Rxbytes))
