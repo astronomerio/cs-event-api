@@ -57,8 +57,11 @@ func NewHandler() *KafkaHandler {
 		"statistics.interval.ms": 500,
 		"request.required.acks":  -1,
 		"message.timeout.ms":     5000,
-		"debug":                  "protocol,topic,msg",
 	}
+	if config.Get().DebugMode == true {
+		cfg.SetKey("debug", "protocol,topic,msg")
+	}
+
 	producer, err := kafka.NewProducer(cfg)
 	if err != nil {
 		logger.Fatalf("failed to create kafka client: %s\n", err)
