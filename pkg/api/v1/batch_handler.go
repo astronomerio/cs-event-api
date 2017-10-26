@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -56,8 +55,6 @@ func (h *RouteHandler) batchHandler(c *gin.Context) {
 		m.SkewTimestamp()
 		h.ingestionHandler.ProcessMessage(m.String(), m.PartitionKey())
 	}
-
-	fmt.Println("num messages:", len(batch.Messages))
 
 	c.AbortWithStatusJSON(http.StatusOK, returnJSON)
 }
