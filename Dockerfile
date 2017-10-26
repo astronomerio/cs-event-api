@@ -11,7 +11,7 @@ RUN make build
 FROM alpine:3.4
 
 COPY --from=0 /go/src/github.com/astronomerio/clickstream-ingestion-api/server /server
-RUN apk update && apk add ca-certificates && update-ca-certificates
+RUN apk update && apk add ca-certificates curl && update-ca-certificates
 
 ENV GIN_MODE=release
 
