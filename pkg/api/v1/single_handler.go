@@ -7,6 +7,8 @@ import (
 
 	v1types "github.com/astronomerio/clickstream-ingestion-api/pkg/types/v1"
 	"github.com/gin-gonic/gin"
+	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
+	"github.com/sirupsen/logrus"
 )
 
 var returnJSON = map[string]bool{
@@ -14,11 +16,13 @@ var returnJSON = map[string]bool{
 }
 
 func (h *RouteHandler) singleHandler(kind string) gin.HandlerFunc {
+	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "v1", "function": "singleHandler"})
 	return func(c *gin.Context) {
 		c.Set("profile", true)
 		c.Set("type", "single")
 		c.Set("action", kind)
 
+		logger.Infof("Request came from : %s", c.GetHeader("X-Forwarded-For"))
 		var message v1types.Message
 		if err := c.ShouldBindWith(&message, binding.JSON); err != nil {
 			c.Set("error", err.Error())
