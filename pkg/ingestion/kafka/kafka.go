@@ -26,7 +26,7 @@ var (
 		Help: "The number of bytes being produced to kafka brokers",
 	}, []string{"broker", "producer"})
 	requestRate = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "producer_requests_total",
+		Name: "kafka_producer_requests_total",
 		Help: "Average number of requests",
 	}, []string{"broker", "producer"})
 	responseRate = prometheus.NewGaugeVec(prometheus.GaugeOpts{
