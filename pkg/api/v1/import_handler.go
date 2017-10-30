@@ -3,6 +3,7 @@ package v1
 import (
 	"log"
 	"net/http"
+	"fmt"
 
 	v1types "github.com/astronomerio/clickstream-ingestion-api/pkg/types/v1"
 	"github.com/gin-gonic/gin"
