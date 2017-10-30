@@ -81,11 +81,13 @@ func (h *KafkaHandler) Start() error {
 func (h *KafkaHandler) Shutdown() error {
 	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka", "function": "Shutdown"})
 	logger.Info("shutting down Kafka handler")
+	defer h.producer.Close()
+
 	msgs := h.producer.Flush(10000)
 	if msgs != 0 {
 		return errors.New(fmt.Sprintf("%d messages were not flushed after a timeout of %d", msgs, 10000))
 	}
-	h.producer.Close()
+
 	return nil
 }
 
