@@ -84,7 +84,7 @@ func (h *KafkaHandler) Shutdown() error {
 	defer h.producer.Close()
 
 	msgs := h.producer.Flush(10000)
-	if msgs != 0 {
+	if len(h.producer.ProduceChannel()) != 0 {
 		return errors.New(fmt.Sprintf("%d messages were not flushed after a timeout of %d", msgs, 10000))
 	}
 
