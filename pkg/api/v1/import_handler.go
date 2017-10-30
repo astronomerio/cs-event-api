@@ -9,6 +9,7 @@ import (
 )
 
 func (h *RouteHandler) importHandler(c *gin.Context) {
+	c.Set("profile", true)
 	c.Set("type", "import")
 	c.Set("action", "import")
 
@@ -29,6 +30,7 @@ func (h *RouteHandler) importHandler(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusOK, returnJSON)
 		return
 	}
+	fmt.Println("num messages:", len(batch.Messages))
 
 	md := v1types.GetRequestMetadata(c)
 	for _, m := range batch.Messages {
