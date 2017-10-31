@@ -7,8 +7,6 @@ import (
 
 	v1types "github.com/astronomerio/clickstream-ingestion-api/pkg/types/v1"
 	"github.com/gin-gonic/gin"
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
-	"github.com/sirupsen/logrus"
 )
 
 var returnJSON = map[string]bool{
