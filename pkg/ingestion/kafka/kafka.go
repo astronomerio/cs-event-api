@@ -119,9 +119,6 @@ func (h *KafkaHandler) startEventListener() {
 					if config.Get().EnableFailover == true {
 						failover.UploadMessage(*m)
 					}
-				} else {
-					logger.Debugf("delivered message to topic %s [%d] at offset %v",
-						*m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset)
 				}
 			default:
 				logger.Errorf("non kafka message found in event stream: %s\n", ev)
