@@ -22,7 +22,6 @@ func (h *RouteHandler) singleHandler(kind string) gin.HandlerFunc {
 		c.Set("type", "single")
 		c.Set("action", kind)
 
-		logger.Infof("Headers : %s", c.Request.Header)
 		var message v1types.Message
 		if err := c.ShouldBindWith(&message, binding.JSON); err != nil {
 			c.Set("error", err.Error())
