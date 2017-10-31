@@ -16,7 +16,6 @@ var returnJSON = map[string]bool{
 }
 
 func (h *RouteHandler) singleHandler(kind string) gin.HandlerFunc {
-	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "v1", "function": "singleHandler"})
 	return func(c *gin.Context) {
 		c.Set("profile", true)
 		c.Set("type", "single")
