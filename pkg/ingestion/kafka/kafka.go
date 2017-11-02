@@ -56,7 +56,9 @@ func NewHandler() *KafkaHandler {
 		"bootstrap.servers":      strings.Join(appConfig.KafkaBrokers, ","),
 		"statistics.interval.ms": 500,
 		"request.required.acks":  -1,
-		"message.timeout.ms":     5000,
+		"message.timeout.ms":     50000,
+		"queue.buffering.max.ms": 5000,
+		"message.send.max.retries": 10,
 	}
 	if config.Get().DebugMode == true {
 		cfg.SetKey("debug", "protocol,topic,msg")
