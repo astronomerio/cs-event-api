@@ -9,6 +9,7 @@ import (
 )
 
 func (h *RouteHandler) importHandler(c *gin.Context) {
+	c.Set("profile", true)
 	c.Set("type", "import")
 	c.Set("action", "import")
 

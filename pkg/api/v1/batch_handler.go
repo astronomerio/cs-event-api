@@ -27,6 +27,7 @@ func gzipToBatch(b []byte) (batch v1types.Batch, err error) {
 }
 
 func (h *RouteHandler) batchHandler(c *gin.Context) {
+	c.Set("profile", true)
 	c.Set("type", "batch")
 	c.Set("action", "batch")
 
