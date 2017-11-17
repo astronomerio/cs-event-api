@@ -17,7 +17,7 @@ func TestMessage_String(t *testing.T) {
 		SentAt:            GenericTime{staticTime},
 	}
 
-	expectedString := "{\"timestamp\":\"2017-01-01T00:00:00Z\",\"originalTimestamp\":\"2017-01-01T00:00:00Z\",\"sentAt\":\"2017-01-01T00:00:00Z\",\"receivedAt\":\"2017-01-01T00:00:00Z\",\"appId\":\"APP_ID\"}"
+	expectedString := "{\"appId\":\"APP_ID\",\"timestamp\":\"2017-01-01T00:00:00Z\",\"originalTimestamp\":\"2017-01-01T00:00:00Z\",\"sentAt\":\"2017-01-01T00:00:00Z\",\"receivedAt\":\"2017-01-01T00:00:00Z\"}"
 
 	assert.Equal(t, expectedString, m.String())
 }
