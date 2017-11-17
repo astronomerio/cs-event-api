@@ -125,7 +125,7 @@ func setDefaults() {
 	viper.SetDefault("S3Timeout", 10)
 	viper.SetDefault("S3Region", "us-east-1")
 	viper.SetDefault("S3Bucket", "ingestion-api-messages")
-	viper.SetDefault("EnableFailover", true)
+	viper.SetDefault("EnableFailover", false)
 	viper.SetDefault("IngestionHandler", "kafka")
 }
 
