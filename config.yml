@@ -1,0 +1,13 @@
+IngestionHandler: kafka
+PrometheusEnabled: true
+HealthCheckEnabled: true
+PProfEnabled: true
+StreamName: main
+AdminPort: 8081
+APIPort: 8080
+
+KafkaBrokers: 192.168.99.100:9092
+KafkaTopic: main
+
+
+EnableFailover: false
