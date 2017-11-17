@@ -51,7 +51,7 @@ func init() {
 
 	setDefaults()
 	if err := viper.ReadInConfig(); err != nil {
-		log.Printf("No log file present, %s \n", err)
+		log.Printf("Failed reading config file: %s\n", err)
 	}
 
 	viper.SetEnvPrefix("ingestion")
