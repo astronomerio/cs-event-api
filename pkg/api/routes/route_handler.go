@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion"
+	"github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,6 +14,7 @@ type RouteHandler interface {
 
 type HandlerConfig struct {
 	IngestionHandler ingestion.Handler
+	Logger           *logrus.Logger
 }
 
 type RouteDefinition struct {
