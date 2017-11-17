@@ -11,12 +11,13 @@ import (
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/api/v1"
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion"
 
+	"os/signal"
+	"syscall"
+
 	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"os/signal"
-	"syscall"
 )
 
 type Server struct {
@@ -112,6 +113,7 @@ func (s *Server) Run() {
 
 	handlerConfig := &routes.HandlerConfig{
 		IngestionHandler: s.config.IngestionHandler,
+		Logger:           logging.GetLogger(),
 	}
 
 	handlerConfig.IngestionHandler.Start()
