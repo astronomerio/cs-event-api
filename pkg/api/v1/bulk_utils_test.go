@@ -1,8 +1,10 @@
 package v1
 
-import "testing"
+import (
+	"testing"
+)
 
-func mergeFields_test(t *testing.T) {
+func Test_mergeFields(t *testing.T) {
 	dst := map[string]interface{}{
 		"val1": 100,
 		"uniq": "string",
