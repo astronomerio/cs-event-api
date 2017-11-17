@@ -11,30 +11,32 @@ import (
 )
 
 type Message struct {
-	Type      string                 `json:"type,omitempty"`
-	MessageID string                 `json:"messageId,omitempty"`
-	Context   map[string]interface{} `json:"context,omitempty"`
+	AppID    string `json:"appId,oimtempty"`
+	WriteKey string `json:"writeKey,omitempty"`
+
+	Type      string `json:"type,omitempty"`
+	MessageID string `json:"messageId,omitempty"`
 
 	Timestamp         GenericTime `json:"timestamp,omitempty"`
 	OriginalTimestamp GenericTime `json:"originalTimestamp,omitempty"`
 	SentAt            GenericTime `json:"sentAt,omitempty"`
 	ReceivedAt        time.Time   `json:"receivedAt,omitempty"`
 
-	AppID        string                 `json:"appId,oimtempty"`
-	WriteKey     string                 `json:"writeKey,omitempty"`
 	Integrations map[string]interface{} `json:"integrations,omitempty"`
 	Traits       map[string]interface{} `json:"traits,omitempty"`
 	Properties   map[string]interface{} `json:"properties,omitempty"`
-	AnonymousID  string                 `json:"anonymousId,omitempty"`
-	UserID       string                 `json:"userId,omitempty"`
-	GroupID      string                 `json:"groupId,omitempty"`
-	PreviousID   string                 `json:"previousId,omitempty"`
-	Category     string                 `json:"category,omitempty"`
-	Name         string                 `json:"name,omitempty"`
-	Action       string                 `json:"action,omitempty"`
-	Channel      string                 `json:"channel,omitempty"`
-	Event        string                 `json:"event,omitempty"`
-	Version      string                 `json:"version,omitempty"`
+	Context      map[string]interface{} `json:"context,omitempty"`
+
+	AnonymousID string `json:"anonymousId,omitempty"`
+	UserID      string `json:"userId,omitempty"`
+	GroupID     string `json:"groupId,omitempty"`
+	PreviousID  string `json:"previousId,omitempty"`
+	Category    string `json:"category,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Action      string `json:"action,omitempty"`
+	Channel     string `json:"channel,omitempty"`
+	Event       string `json:"event,omitempty"`
+	Version     string `json:"version,omitempty"`
 }
 
 // IsValid returns whether or not the message is valid
