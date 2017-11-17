@@ -74,6 +74,12 @@
   revision = "68e816d1c783414e79bc65b3994d9ab6b0a722ab"
 
 [[projects]]
+  name = "github.com/imdario/mergo"
+  packages = ["."]
+  revision = "7fe0c75c13abdee74b09fcacef5ea1c6bba6a874"
+  version = "0.2.4"
+
+[[projects]]
   name = "github.com/inconshreveable/mousetrap"
   packages = ["."]
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
@@ -244,6 +250,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ef38a9e32fd87e17e50b3e9782ee1ec2c7b965453c835830396406a5f1c29623"
+  inputs-digest = "9fc1cf34c2f45c500fad242eabfaf52fda7ccaac3519f12acd5d3e0857b19929"
   solver-name = "gps-cdcl"
   solver-version = 1
