@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin/binding"
 
-	v1types "github.com/astronomerio/clickstream-ingestion-api/pkg/types/v1"
+	v1types "github.com/astronomerio/cs-event-api/pkg/types/v1"
 	"github.com/gin-gonic/gin"
 )
 

@@ -6,15 +6,15 @@ import (
 	"os"
 	"time"
 
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/api/prometheus"
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/api/routes"
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/api/v1"
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion"
+	"github.com/astronomerio/cs-event-api/pkg/api/prometheus"
+	"github.com/astronomerio/cs-event-api/pkg/api/routes"
+	"github.com/astronomerio/cs-event-api/pkg/api/v1"
+	"github.com/astronomerio/cs-event-api/pkg/ingestion"
 
 	"os/signal"
 	"syscall"
 
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
+	"github.com/astronomerio/cs-event-api/pkg/logging"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

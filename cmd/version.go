@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/version"
+	"github.com/astronomerio/cs-event-api/pkg/version"
 	"github.com/spf13/cobra"
 )
 

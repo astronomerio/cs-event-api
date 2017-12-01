@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/util"
+	"github.com/astronomerio/cs-event-api/pkg/util"
 	"github.com/gin-gonic/gin"
 )
 

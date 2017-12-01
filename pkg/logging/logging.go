@@ -1,7 +1,7 @@
 package logging
 
 import (
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/config"
+	"github.com/astronomerio/cs-event-api/pkg/config"
 	"github.com/sirupsen/logrus"
 )
 

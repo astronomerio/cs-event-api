@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion"
+	"github.com/astronomerio/cs-event-api/pkg/ingestion"
 	"github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"

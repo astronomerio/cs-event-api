@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion"
+	"github.com/astronomerio/cs-event-api/pkg/ingestion"
 	"github.com/spf13/cobra"
 
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/api"
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/config"
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/logging"
+	"github.com/astronomerio/cs-event-api/pkg/api"
+	"github.com/astronomerio/cs-event-api/pkg/config"
+	"github.com/astronomerio/cs-event-api/pkg/logging"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,7 +16,6 @@ func buildAndStart() {
 	appConfig.Print()
 
 	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "cmd", "function": "main"})
-
 
 	apiServerConfig := &api.ServerConfig{
 		APIPort:          appConfig.APIPort,
