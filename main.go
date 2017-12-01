@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/astronomerio/clickstream-ingestion-api/cmd"
+	"github.com/astronomerio/cs-event-api/cmd"
 )
 
 func main() {

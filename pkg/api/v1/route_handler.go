@@ -1,8 +1,8 @@
 package v1
 
 import (
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/api/routes"
-	"github.com/astronomerio/clickstream-ingestion-api/pkg/ingestion"
+	"github.com/astronomerio/cs-event-api/pkg/api/routes"
+	"github.com/astronomerio/cs-event-api/pkg/ingestion"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
