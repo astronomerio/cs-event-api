@@ -23,3 +23,6 @@ push-image:
 install:
 	mkdir -p $(DESTDIR)
 	cp event-api $(DESTDIR)
+
+uninstall:
+	rm -rf $(DESTDIR)
