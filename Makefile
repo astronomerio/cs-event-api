@@ -20,7 +20,7 @@ tag-latest:
 push-image:
 	docker push $(IMAGE_NAME):$(VERSION)
 
-install:
+install: build
 	mkdir -p $(DESTDIR)
 	cp event-api $(DESTDIR)
 
