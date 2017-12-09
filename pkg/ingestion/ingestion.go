@@ -1,8 +1,8 @@
 package ingestion
 
 import (
-	"github.com/astronomerio/cs-event-api/pkg/ingestion/kafka"
-	"github.com/astronomerio/cs-event-api/pkg/logging"
+	"github.com/astronomerio/event-api/pkg/ingestion/kafka"
+	"github.com/astronomerio/event-api/pkg/logging"
 	"github.com/sirupsen/logrus"
 )
 

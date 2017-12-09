@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"github.com/astronomerio/cs-event-api/pkg/ingestion"
+	"github.com/astronomerio/event-api/pkg/ingestion"
 	"github.com/spf13/cobra"
 
-	"github.com/astronomerio/cs-event-api/pkg/api"
-	"github.com/astronomerio/cs-event-api/pkg/config"
-	"github.com/astronomerio/cs-event-api/pkg/logging"
+	"github.com/astronomerio/event-api/pkg/api"
+	"github.com/astronomerio/event-api/pkg/config"
+	"github.com/astronomerio/event-api/pkg/logging"
 	"github.com/sirupsen/logrus"
 )
 
