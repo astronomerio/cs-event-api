@@ -3,13 +3,13 @@ package kafka
 import (
 	"strings"
 
-	"github.com/astronomerio/cs-event-api/pkg/config"
+	"github.com/astronomerio/event-api/pkg/config"
 
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/astronomerio/cs-event-api/pkg/ingestion/failover"
-	"github.com/astronomerio/cs-event-api/pkg/logging"
+	"github.com/astronomerio/event-api/pkg/ingestion/failover"
+	"github.com/astronomerio/event-api/pkg/logging"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"

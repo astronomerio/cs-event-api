@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/astronomerio/cs-event-api/pkg/version"
+	"github.com/astronomerio/event-api/pkg/version"
 	"github.com/spf13/cobra"
 )
 

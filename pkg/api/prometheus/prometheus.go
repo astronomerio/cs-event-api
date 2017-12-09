@@ -3,7 +3,7 @@ package prometheus
 import (
 	"time"
 
-	"github.com/astronomerio/cs-event-api/pkg/logging"
+	"github.com/astronomerio/event-api/pkg/logging"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

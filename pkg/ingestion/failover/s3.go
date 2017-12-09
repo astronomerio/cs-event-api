@@ -3,8 +3,8 @@ package failover
 import (
 	"bytes"
 	"context"
-	"github.com/astronomerio/cs-event-api/pkg/config"
-	"github.com/astronomerio/cs-event-api/pkg/logging"
+	"github.com/astronomerio/event-api/pkg/config"
+	"github.com/astronomerio/event-api/pkg/logging"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
