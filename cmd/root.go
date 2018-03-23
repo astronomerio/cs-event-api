@@ -1,34 +1,44 @@
 package cmd
 
 import (
-	"github.com/astronomerio/event-api/pkg/ingestion"
+	"github.com/astronomerio/event-api/ingestion"
 	"github.com/spf13/cobra"
 
-	"github.com/astronomerio/event-api/pkg/api"
-	"github.com/astronomerio/event-api/pkg/config"
-	"github.com/astronomerio/event-api/pkg/logging"
+	"github.com/astronomerio/event-api/api"
+	"github.com/astronomerio/event-api/config"
+	"github.com/astronomerio/event-api/logging"
 	"github.com/sirupsen/logrus"
 )
 
-func buildAndStart() {
+// RootCmd is the root cobra command
+var RootCmd = &cobra.Command{
+	Use: "event-api",
+	Run: start,
+}
+
+func start(cmd *cobra.Command, args []string) {
+	log := logging.GetLogger().WithFields(logrus.Fields{"package": "cmd"})
+
+	// Create main server object
 	apiServer := api.NewServer()
+
+	// Grab and print application config
 	appConfig := config.Get()
 	appConfig.Print()
 
-	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "cmd", "function": "main"})
-
+	// Create a server config
 	apiServerConfig := &api.ServerConfig{
-		APIPort:          appConfig.APIPort,
-		AdminPort:        appConfig.AdminPort,
-		IngestionHandler: ingestion.NewHandler(appConfig.IngestionHandler),
-
+		APIPort:               appConfig.APIPort,
+		AdminPort:             appConfig.AdminPort,
+		MessageWriter:         ingestion.NewMessageWriter(appConfig.MessageWriter),
 		GracefulShutdownDelay: appConfig.GracefulShutdownDelay,
 	}
 
-	apiServer.WithConfig(apiServerConfig)
-	apiServer.WithDefaultRoutes()
-
-	apiServer.WithRequestID()
+	// Set up our server options
+	apiServer.
+		WithConfig(apiServerConfig).
+		WithDefaultRoutes().
+		WithRequestID()
 
 	if appConfig.HealthCheckEnabled {
 		apiServer.WithHealthCheck()
@@ -42,13 +52,6 @@ func buildAndStart() {
 		apiServer.WithPProf()
 	}
 
-	logger.Info("starting api server")
+	log.Info("Starting API server")
 	apiServer.Run()
-}
-
-var RootCmd = &cobra.Command{
-	Use: "clickstream-api",
-	Run: func(cmd *cobra.Command, args []string) {
-		buildAndStart()
-	},
 }
