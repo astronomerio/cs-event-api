@@ -22,6 +22,11 @@ type Writer struct {
 }
 
 var (
+	// Writer configuration
+	appConfig = config.Get()
+	isRunning = false
+
+	// Prometheus metrics
 	bytesOut = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "kafka_producer_message_out_bytes_total",
 		Help: "The number of bytes being produced to kafka brokers",
@@ -47,11 +52,10 @@ func init() {
 	prometheus.MustRegister(latency)
 }
 
-var appConfig = config.Get()
-var isRunning = false
-
+// NewWriter creates and returns a new Kafka Writer
 func NewWriter() *Writer {
-	log := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka", "function": "NewWriter"})
+	log := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka"})
+
 	// https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 	cfg := &kafka.ConfigMap{
 		"bootstrap.servers":        strings.Join(appConfig.KafkaBrokers, ","),
@@ -65,72 +69,73 @@ func NewWriter() *Writer {
 		cfg.SetKey("debug", "protocol,topic,msg")
 	}
 
+	// Create a new kafka producer
 	producer, err := kafka.NewProducer(cfg)
 	if err != nil {
-		log.Fatalf("failed to create kafka client: %s\n", err)
+		log.Fatalf("Failed to create kafka client: %s\n", err)
 	}
-	h := Writer{
+
+	// Create and return a new Kafka Writer
+	return &Writer{
 		producer: producer,
 		topic:    appConfig.KafkaTopic,
 	}
-	return &h
 }
 
+// Start initializes the kafka event listener
 func (h *Writer) Start() error {
-	h.startEventListener()
-	return nil
-}
-
-func (h *Writer) Shutdown() error {
-	log := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka", "function": "Shutdown"})
-	log.Info("shutting down Kafka handler")
-	defer h.producer.Close()
-
-	msgs := h.producer.Flush(10000)
-	if len(h.producer.ProduceChannel()) != 0 {
-		return errors.New(fmt.Sprintf("%d messages were not flushed after a timeout of %d", msgs, 10000))
-	}
-
-	return nil
-}
-
-func (h *Writer) startEventListener() {
-	log := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka", "function": "startEventListener"})
+	log := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka"})
 
 	go func() {
+		// Set our running flag
 		isRunning = true
+
+		// When this function ends, set our flag back to false
 		defer func() {
 			isRunning = false
 		}()
 
+		// Loop over events
 		for e := range h.producer.Events() {
 			switch ev := e.(type) {
 			case *kafka.Stats:
+				// Unmarshal Stats object
 				var stats Stats
 				err := json.Unmarshal([]byte(e.String()), &stats)
 				if err != nil {
-					log.Errorf("json unmarshal error: %s", err)
+					log.Errorf("JSON unmarshal error: %s", err)
 				}
+
+				// Loop over brokers
 				for _, v := range stats.Brokers {
-					bytesOut.With(prometheus.Labels{"broker": v.Name, "producer": "event-api"}).Set(float64(v.Rxbytes))
-					latency.With(prometheus.Labels{"broker": v.Name, "producer": "event-api"}).Set(float64(v.Rtt.Avg))
-					responseRate.With(prometheus.Labels{"broker": v.Name, "producer": "event-api"}).Set(float64(v.Rx))
-					requestRate.With(prometheus.Labels{"broker": v.Name, "producer": "event-api"}).Set(float64(v.Tx))
+					// Create common labels
+					lbl := prometheus.Labels{"broker": v.Name, "producer": "event-api"}
+
+					// Record metrics
+					bytesOut.With(lbl).Set(float64(v.Rxbytes))
+					latency.With(lbl).Set(float64(v.Rtt.Avg))
+					responseRate.With(lbl).Set(float64(v.Rx))
+					requestRate.With(lbl).Set(float64(v.Tx))
 				}
 			case *kafka.Message:
-				m := ev
-				if m.TopicPartition.Error != nil {
-					log.Errorf("delivery failed: %v", m.TopicPartition.Error)
+				if ev.TopicPartition.Error != nil {
+					log.Debug("Failed to deliver message to %v\n", ev.TopicPartition)
+					log.Errorf("Delivery failed: %v", ev.TopicPartition.Error)
+				} else {
+					log.Debug("Delivered message to %v\n", ev.TopicPartition)
 				}
 			default:
-				log.Errorf("non kafka message found in event stream: %s\n", ev)
+				log.Errorf("Unknown event in %s\n", ev)
 			}
 		}
 	}()
+
+	return nil
 }
 
+// ProcessMessage writes a given message to a given topic in the kafka cluster
 func (h *Writer) ProcessMessage(message, partition string) {
-	log := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka", "function": "ProcessMessage"})
+	log := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka"})
 
 	// Create message
 	msg := &kafka.Message{
@@ -153,5 +158,18 @@ func (h *Writer) ProcessMessage(message, partition string) {
 	if err != nil {
 		log.Errorf("Unable to produce %f", err.Error())
 	}
+}
 
+// Shutdown cleans up the Kafka Writer
+func (h *Writer) Shutdown() error {
+	log := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka"})
+	log.Info("Shutting down Kafka Writer")
+	defer h.producer.Close()
+
+	msgs := h.producer.Flush(10000)
+	if len(h.producer.ProduceChannel()) != 0 {
+		return errors.New(fmt.Sprintf("%d messages were not flushed after a timeout of %d", msgs, 10000))
+	}
+
+	return nil
 }

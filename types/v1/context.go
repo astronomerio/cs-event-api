@@ -6,21 +6,21 @@ import (
 
 // Context provides the representation of the `context` object
 type Context struct {
-	App       AppInfo      `json:"app,omitempty"`
-	Campaign  CampaignInfo `json:"campaign,omitempty"`
-	Device    DeviceInfo   `json:"device,omitempty"`
-	Library   LibraryInfo  `json:"library,omitempty"`
-	Location  LocationInfo `json:"location,omitempty"`
-	Network   NetworkInfo  `json:"network,omitempty"`
-	OS        OSInfo       `json:"os,omitempty"`
-	Page      PageInfo     `json:"page,omitempty"`
-	Referrer  ReferrerInfo `json:"referrer,omitempty"`
-	Screen    ScreenInfo   `json:"screen,omitempty"`
-	IP        net.IP       `json:"ip,omitempty"`
-	Locale    string       `json:"locale,omitempty"`
-	Timezone  string       `json:"timezone,omitempty"`
-	UserAgent string       `json:"userAgent,omitempty"`
-	Traits    Traits       `json:"traits,omitempty"`
+	App       *AppInfo      `json:"app,omitempty"`
+	Campaign  *CampaignInfo `json:"campaign,omitempty"`
+	Device    *DeviceInfo   `json:"device,omitempty"`
+	Library   *LibraryInfo  `json:"library,omitempty"`
+	Location  *LocationInfo `json:"location,omitempty"`
+	Network   *NetworkInfo  `json:"network,omitempty"`
+	OS        *OSInfo       `json:"os,omitempty"`
+	Page      *PageInfo     `json:"page,omitempty"`
+	Referrer  *ReferrerInfo `json:"referrer,omitempty"`
+	Screen    *ScreenInfo   `json:"screen,omitempty"`
+	IP        net.IP        `json:"ip,omitempty"`
+	Locale    string        `json:"locale,omitempty"`
+	Timezone  string        `json:"timezone,omitempty"`
+	UserAgent string        `json:"userAgent,omitempty"`
+	Traits    *Traits       `json:"traits,omitempty"`
 }
 
 // AppInfo provides the representation of the `context.app` object

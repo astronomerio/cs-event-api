@@ -94,6 +94,7 @@ func middleware(ctx *gin.Context) {
 
 	// Grab the values that were set in the handlers
 	m := ctx.GetString("method")
+	a := ctx.GetString("action")
 	ec := ctx.GetInt("event_count")
 	er := ctx.GetString("error")
 
@@ -104,7 +105,7 @@ func middleware(ctx *gin.Context) {
 
 	// Increment errors if there was an error
 	if len(er) > 0 {
-		errorCounter.WithLabelValues(m).Inc()
+		errorCounter.WithLabelValues(m, a).Inc()
 	}
 
 	// Update metrics

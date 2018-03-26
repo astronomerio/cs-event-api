@@ -31,16 +31,12 @@ func (h *RouteHandler) Register(router *gin.Engine) {
 	{
 		v1Single.POST("t", h.singleHandler("track"))
 		v1Single.POST("track", h.singleHandler("track"))
-
 		v1Single.POST("p", h.singleHandler("page"))
 		v1Single.POST("page", h.singleHandler("page"))
-
 		v1Single.POST("a", h.singleHandler("alias"))
 		v1Single.POST("alias", h.singleHandler("alias"))
-
 		v1Single.POST("i", h.singleHandler("identify"))
 		v1Single.POST("identify", h.singleHandler("identify"))
-
 		v1Single.POST("g", h.singleHandler("group"))
 		v1Single.POST("group", h.singleHandler("group"))
 	}
@@ -49,5 +45,14 @@ func (h *RouteHandler) Register(router *gin.Engine) {
 	{
 		v1Batch.POST("batch", h.batchHandler)
 		v1Batch.POST("import", h.batchHandler)
+	}
+
+	v1Pixel := router.Group("v1/pixel").Use(limits.RequestSizeLimiter(15000))
+	{
+		v1Pixel.GET("track", h.pixelHandler("track"))
+		v1Pixel.GET("page", h.pixelHandler("page"))
+		v1Pixel.GET("alias", h.pixelHandler("alias"))
+		v1Pixel.GET("identify", h.pixelHandler("identify"))
+		v1Pixel.GET("group", h.pixelHandler("group"))
 	}
 }

@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"encoding/base64"
 	"net/http"
 	"time"
 
@@ -9,16 +10,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *RouteHandler) singleHandler(kind string) gin.HandlerFunc {
+func (h *RouteHandler) pixelHandler(kind string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log := h.logger.WithFields(logrus.Fields{"package": "v1"})
-		c.Set("method", "single")
+		c.Set("method", "pixel")
 
-		// Create a new msg
-		raw, err := c.GetRawData()
+		raw, err := base64.StdEncoding.DecodeString(c.Query("data"))
 		if err != nil {
 			// Log and return 200
-			action := "read-body"
+			action := "decode"
 			c.Set("action", action)
 			c.Set("error", err.Error())
 			log.WithFields(logrus.Fields{"action": action}).Error(err.Error())
@@ -57,7 +57,6 @@ func (h *RouteHandler) singleHandler(kind string) gin.HandlerFunc {
 		c.Set("event_count", 1)
 
 		// Always return 200
-		c.Header("Connection", "keep-alive")
 		c.AbortWithStatusJSON(http.StatusOK, returnJSON)
 	}
 }

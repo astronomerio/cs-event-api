@@ -7,8 +7,8 @@ import (
 
 // MessageWriter is an abstract handler that should pipe events to their next destination
 type MessageWriter interface {
-	ProcessMessage(string, string)
 	Start() error
+	ProcessMessage(string, string)
 	Shutdown() error
 }
 

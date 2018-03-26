@@ -1,9 +1,10 @@
-# IngestionHandler: kafka
 PrometheusEnabled: true
 HealthCheckEnabled: true
 PProfEnabled: true
 AdminPort: 8081
 APIPort: 8080
-KafkaBrokers: 192.168.99.100:9092
+# MessageWriter: kafka
+KafkaBrokers: kafka:9092
 StreamName: ingestion
 KafkaTopic: ingestion
+DebugMode: true

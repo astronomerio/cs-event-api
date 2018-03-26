@@ -15,12 +15,12 @@ func (h *Writer) Start() error {
 	return nil
 }
 
-// Shutdown the handler
-func (h *Writer) Shutdown() error {
-	return nil
-}
-
 // ProcessMessage prints the message to stdout
 func (h *Writer) ProcessMessage(message, partition string) {
 	fmt.Printf("%s ==> %s\n", message, partition)
+}
+
+// Shutdown the handler
+func (h *Writer) Shutdown() error {
+	return nil
 }

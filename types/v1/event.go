@@ -12,10 +12,10 @@ type Event struct {
 	Context           *Context      `json:"context,omitempty"`
 	Integrations      *Integrations `json:"integrations,omitempty"`
 	MessageID         string        `json:"messageId,omitempty"`
-	OriginalTimestamp time.Time     `json:"originalTimestamp,omitempty"`
-	ReceivedAt        time.Time     `json:"receivedAt,omitempty"`
-	SentAt            time.Time     `json:"sentAt,omitempty"`
-	Timestamp         time.Time     `json:"timestamp,omitempty"`
+	OriginalTimestamp Timestamp     `json:"originalTimestamp,omitempty"`
+	ReceivedAt        Timestamp     `json:"receivedAt,omitempty"`
+	SentAt            Timestamp     `json:"sentAt,omitempty"`
+	Timestamp         Timestamp     `json:"timestamp,omitempty"`
 	Type              string        `json:"type,omitempty"`
 	UserID            string        `json:"userId,omitempty"`
 	Version           string        `json:"version,omitempty"`
@@ -39,12 +39,12 @@ func (ev *Event) GetType() string {
 
 // WithSentAt sets the sentAt date
 func (ev *Event) WithSentAt(t time.Time) {
-	ev.SentAt = t
+	ev.SentAt.Time = t
 }
 
 // WithReceivedAt sets the receivedAt date
 func (ev *Event) WithReceivedAt(t time.Time) {
-	ev.ReceivedAt = t
+	ev.ReceivedAt.Time = t
 }
 
 // SkewTimestamp corrects for incorrect client clocks
@@ -54,7 +54,7 @@ func (ev *Event) SkewTimestamp() {
 	ev.OriginalTimestamp = ev.Timestamp
 
 	// Set timestamp to Timestamp +- (ReveivedAt - SentAt)
-	ev.Timestamp = ev.Timestamp.Add(ev.ReceivedAt.Sub(ev.SentAt))
+	ev.Timestamp = Timestamp{ev.Timestamp.Add(ev.ReceivedAt.Sub(ev.SentAt.Time))}
 }
 
 // WithRequestMetadata adds server side information to the message

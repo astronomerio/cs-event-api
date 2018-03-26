@@ -48,3 +48,11 @@
 [[constraint]]
   branch = "master"
   name = "github.com/gin-contrib/size"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/joeshaw/iso8601"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/araddon/dateparse"

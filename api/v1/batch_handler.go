@@ -21,10 +21,10 @@ func (h *RouteHandler) batchHandler(c *gin.Context) {
 	raw, err := c.GetRawData()
 	if err != nil {
 		// Log and return 200
+		action := "read-body"
+		c.Set("action", action)
 		c.Set("error", err.Error())
-		log.WithFields(logrus.Fields{
-			"action": "read-body",
-		}).Error(err.Error())
+		log.WithFields(logrus.Fields{"action": action}).Error(err.Error())
 		c.AbortWithStatusJSON(http.StatusOK, returnJSON)
 		return
 	}
@@ -34,10 +34,10 @@ func (h *RouteHandler) batchHandler(c *gin.Context) {
 		raw, err = unzip(raw)
 		if err != nil {
 			// Log and return 200
+			action := "gzip-inflate"
+			c.Set("action", action)
 			c.Set("error", err.Error())
-			log.WithFields(logrus.Fields{
-				"action": "gzip-inflate",
-			}).Error(err.Error())
+			log.WithFields(logrus.Fields{"action": action}).Error(err.Error())
 			c.AbortWithStatusJSON(http.StatusOK, returnJSON)
 			return
 		}
@@ -50,10 +50,10 @@ func (h *RouteHandler) batchHandler(c *gin.Context) {
 	err = json.Unmarshal(raw, &batch)
 	if err != nil {
 		// Log and return 200
+		action := "unmarshal"
+		c.Set("action", action)
 		c.Set("error", err.Error())
-		log.WithFields(logrus.Fields{
-			"action": "batch-unmarshal ",
-		}).Error(err.Error())
+		log.WithFields(logrus.Fields{"action": action}).Error(err.Error())
 		c.AbortWithStatusJSON(http.StatusOK, returnJSON)
 		return
 	}
@@ -79,19 +79,19 @@ func (h *RouteHandler) batchHandler(c *gin.Context) {
 		// Merge batch level context to msg context
 		err := msg.MergeContext(batch.Context)
 		if err != nil {
+			action := "merge-context"
+			c.Set("action", action)
 			c.Set("error", err.Error())
-			log.WithFields(logrus.Fields{
-				"action": "merge-context",
-			}).Error(err.Error())
+			log.WithFields(logrus.Fields{"action": action}).Error(err.Error())
 		}
 
 		// Merge batch level integrations to msg integrations
 		err = msg.MergeIntegrations(batch.Integrations)
 		if err != nil {
+			action := "merge-integrations"
+			c.Set("action", action)
 			c.Set("error", err.Error())
-			log.WithFields(logrus.Fields{
-				"action": "merge-integrations",
-			}).Error(err.Error())
+			log.WithFields(logrus.Fields{"action": action}).Error(err.Error())
 		}
 
 		// Pass the msg along to the adapter
