@@ -3,7 +3,7 @@ HealthCheckEnabled: true
 PProfEnabled: true
 AdminPort: 8081
 APIPort: 8080
-# MessageWriter: kafka
+MessageWriter: kafka
 KafkaBrokers: kafka:9092
 StreamName: ingestion
 KafkaTopic: ingestion

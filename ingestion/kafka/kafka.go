@@ -6,7 +6,6 @@ import (
 	"github.com/astronomerio/event-api/config"
 
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/astronomerio/event-api/logging"
@@ -21,24 +20,36 @@ type Writer struct {
 	topic    string
 }
 
+const (
+	flushTimeout = 10000
+)
+
 var (
 	// Writer configuration
 	appConfig = config.Get()
 	isRunning = false
 
 	// Prometheus metrics
-	bytesOut = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "kafka_producer_message_out_bytes_total",
+	txBytes = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "kafka_producer_tx_bytes_total",
 		Help: "The number of bytes being produced to kafka brokers",
 	}, []string{"broker", "producer"})
-	requestRate = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "kafka_producer_requests_total",
-		Help: "Average number of requests",
+
+	rxBytes = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "kafka_producer_rx_bytes_total",
+		Help: "The number of bytes being received to kafka brokers",
 	}, []string{"broker", "producer"})
-	responseRate = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "kafka_producer_responses_total",
-		Help: "Average number of responses received",
+
+	txRequests = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "kafka_producer_tx_requests_total",
+		Help: "The number of requests sent to brokers",
 	}, []string{"broker", "producer"})
+
+	rxResponses = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "kafka_producer_rx_responses_total",
+		Help: "The number of responses from the brokers",
+	}, []string{"broker", "producer"})
+
 	latency = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "kafka_producer_latency_ms",
 		Help: "Average request latency",
@@ -46,9 +57,10 @@ var (
 )
 
 func init() {
-	prometheus.MustRegister(bytesOut)
-	prometheus.MustRegister(requestRate)
-	prometheus.MustRegister(responseRate)
+	prometheus.MustRegister(txBytes)
+	prometheus.MustRegister(rxBytes)
+	prometheus.MustRegister(txRequests)
+	prometheus.MustRegister(rxResponses)
 	prometheus.MustRegister(latency)
 }
 
@@ -56,6 +68,7 @@ func init() {
 func NewWriter() *Writer {
 	log := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka"})
 
+	// Set up Kafka producer config
 	// https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 	cfg := &kafka.ConfigMap{
 		"bootstrap.servers":        strings.Join(appConfig.KafkaBrokers, ","),
@@ -65,6 +78,8 @@ func NewWriter() *Writer {
 		"queue.buffering.max.ms":   5000,
 		"message.send.max.retries": 10,
 	}
+
+	// Set Kafka debugging if in DebugMode
 	if config.Get().DebugMode == true {
 		cfg.SetKey("debug", "protocol,topic,msg")
 	}
@@ -98,34 +113,40 @@ func (h *Writer) Start() error {
 		// Loop over events
 		for e := range h.producer.Events() {
 			switch ev := e.(type) {
+
+			// Delivery reports
+			case *kafka.Message:
+				if ev.TopicPartition.Error != nil {
+					log.Errorf("Delivery failed: %v", ev.TopicPartition.Error)
+				} else {
+					log.Debugf("Delivered message to %v\n", ev.TopicPartition)
+				}
+
+			// Stats updates
 			case *kafka.Stats:
 				// Unmarshal Stats object
 				var stats Stats
 				err := json.Unmarshal([]byte(e.String()), &stats)
 				if err != nil {
-					log.Errorf("JSON unmarshal error: %s", err)
+					log.Errorf("Error unmarshalling Kafka Stats: %s", err)
 				}
 
 				// Loop over brokers
 				for _, v := range stats.Brokers {
 					// Create common labels
-					lbl := prometheus.Labels{"broker": v.Name, "producer": "event-api"}
+					lbls := prometheus.Labels{"broker": v.Name, "producer": "event-api"}
 
 					// Record metrics
-					bytesOut.With(lbl).Set(float64(v.Rxbytes))
-					latency.With(lbl).Set(float64(v.Rtt.Avg))
-					responseRate.With(lbl).Set(float64(v.Rx))
-					requestRate.With(lbl).Set(float64(v.Tx))
+					txBytes.With(lbls).Set(float64(v.Txbytes)) // Total bytes sent to broker
+					rxBytes.With(lbls).Set(float64(v.Rxbytes)) // Total bytes received by broker
+					txRequests.With(lbls).Set(float64(v.Tx))   // Total requests sent
+					rxResponses.With(lbls).Set(float64(v.Rx))  // Total responses received
+					latency.With(lbls).Set(float64(v.Rtt.Avg)) // Avg roundtrip to broker
 				}
-			case *kafka.Message:
-				if ev.TopicPartition.Error != nil {
-					log.Debug("Failed to deliver message to %v\n", ev.TopicPartition)
-					log.Errorf("Delivery failed: %v", ev.TopicPartition.Error)
-				} else {
-					log.Debug("Delivered message to %v\n", ev.TopicPartition)
-				}
+
+			// Unknown message type
 			default:
-				log.Errorf("Unknown event in %s\n", ev)
+				log.Debugf("Received unknown event in %s\n", ev)
 			}
 		}
 	}()
@@ -164,11 +185,14 @@ func (h *Writer) ProcessMessage(message, partition string) {
 func (h *Writer) Shutdown() error {
 	log := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka"})
 	log.Info("Shutting down Kafka Writer")
+
+	// Defer close until function exists
 	defer h.producer.Close()
 
-	msgs := h.producer.Flush(10000)
+	// Flush any remaining messages, waiting up until the flushTimeout
+	msgs := h.producer.Flush(flushTimeout)
 	if len(h.producer.ProduceChannel()) != 0 {
-		return errors.New(fmt.Sprintf("%d messages were not flushed after a timeout of %d", msgs, 10000))
+		return fmt.Errorf("%d messages were not flushed after a timeout of %d", msgs, flushTimeout)
 	}
 
 	return nil
