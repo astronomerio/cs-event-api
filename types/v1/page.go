@@ -9,7 +9,8 @@ type Page struct {
 	Properties Properties `json:"properties,omitempty"`
 }
 
-func (msg Page) validate() error {
+// Validate validates the message
+func (msg Page) Validate() error {
 	if len(msg.UserID) == 0 && len(msg.AnonymousID) == 0 {
 		return FieldError{
 			Type:  "Page",

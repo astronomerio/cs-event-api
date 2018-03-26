@@ -8,7 +8,8 @@ type Alias struct {
 	PreviousID string `json:"previousId"`
 }
 
-func (msg Alias) validate() error {
+// Validate validates the message
+func (msg Alias) Validate() error {
 	if len(msg.UserID) == 0 {
 		return FieldError{
 			Type:  "Alias",

@@ -9,12 +9,13 @@ type Track struct {
 	Properties Properties `json:"properties,omitempty"`
 }
 
-func (msg Track) validate() error {
+// Validate validates the message
+func (msg Track) Validate() error {
 	if len(msg.EventName) == 0 {
 		return FieldError{
 			Type:  "Track",
 			Name:  "Event",
-			Value: msg.Event,
+			Value: msg.EventName,
 		}
 	}
 

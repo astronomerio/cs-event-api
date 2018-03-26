@@ -9,7 +9,8 @@ type Screen struct {
 	Properties Properties `json:"properties,omitempty"`
 }
 
-func (msg Screen) validate() error {
+// Validate validates the message
+func (msg Screen) Validate() error {
 	if len(msg.UserID) == 0 && len(msg.AnonymousID) == 0 {
 		return FieldError{
 			Type:  "Screen",

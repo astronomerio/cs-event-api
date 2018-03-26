@@ -8,7 +8,8 @@ type Identify struct {
 	Traits Traits `json:"traits,omitempty"`
 }
 
-func (msg Identify) validate() error {
+// Validate validates the message
+func (msg Identify) Validate() error {
 	if len(msg.UserID) == 0 && len(msg.AnonymousID) == 0 {
 		return FieldError{
 			Type:  "Identify",

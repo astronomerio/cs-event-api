@@ -28,11 +28,11 @@ func (m *Messages) UnmarshalJSON(data []byte) error {
 
 	var msgs = []Message{}
 	for _, msg := range tmp {
+		// TODO: Should we fail if one message out of batch fails to parse/validate?
 		newMsg, err := NewMessage(msg.Type, msg.Raw)
-		if err != nil {
-			return err
+		if err == nil {
+			msgs = append(msgs, newMsg)
 		}
-		msgs = append(msgs, newMsg)
 	}
 
 	*m = msgs

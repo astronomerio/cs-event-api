@@ -8,7 +8,8 @@ type Group struct {
 	GroupID string `json:"groupId"`
 }
 
-func (msg Group) validate() error {
+// Validate validates the message
+func (msg Group) Validate() error {
 	if len(msg.GroupID) == 0 {
 		return FieldError{
 			Type:  "Group",
