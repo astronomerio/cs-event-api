@@ -40,7 +40,7 @@ func init() {
 		log.Printf("Failed reading config file: %s\n", err)
 	}
 
-	viper.SetEnvPrefix("event-api")
+	viper.SetEnvPrefix("EA")
 	viper.AutomaticEnv()
 
 	if err := viper.Unmarshal(&AppConfig); err != nil {

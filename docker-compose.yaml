@@ -35,14 +35,9 @@ services:
     depends_on:
       - kafka
     environment:
-      EA_API_PORT: 8080
-      EA_ADMIN_PORT: 8081
       EA_DEBUG_MODE: "true"
-      EA_ENABLE_PPROF: "true"
-      EA_ENABLE_HEALTH_CHECK: "true"
-      EA_ENABLE_PROMETHEUS: "true"
       EA_KAFKA_BROKERS: "kafka:9092"
-      EA_KAFKA_TOPIC: "main"
+      EA_KAFKA_TOPIC: "ingestion"
     ports:
       - "8080:8080"
       - "8081:8081"

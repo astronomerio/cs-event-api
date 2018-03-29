@@ -1,23 +1,27 @@
 package cmd
 
-//TODO: Add version from make
+import (
+	"fmt"
 
-// import (
-// 	"fmt"
+	"github.com/spf13/cobra"
+)
 
-// 	"github.com/astronomerio/event-api/version"
-// 	"github.com/spf13/cobra"
-// )
+var (
+	version    string
+	gitCommit  string
+	versionCmd = &cobra.Command{
+		Use:   "version",
+		Short: "Event API version",
+		Long:  "Event API version",
+		Run:   printVersion,
+	}
+)
 
-// var versionCmd = &cobra.Command{
-// 	Use:   "version",
-// 	Short: "Print the version number of the clickstream-api server",
-// 	Run: func(cmd *cobra.Command, args []string) {
-// 		fmt.Println(version.Version)
-// 		fmt.Println(version.GitCommit)
-// 	},
-// }
+func init() {
+	RootCmd.AddCommand(versionCmd)
+}
 
-// func init() {
-// 	RootCmd.AddCommand(versionCmd)
-// }
+func printVersion(cmd *cobra.Command, args []string) {
+	fmt.Printf("Event API Version: %s\n", version)
+	fmt.Printf("Git Commit: %s\n", gitCommit)
+}

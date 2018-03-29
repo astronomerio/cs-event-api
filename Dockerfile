@@ -22,4 +22,4 @@ ENV GIN_MODE=release
 EXPOSE 8080 8081
 
 # Use ENTRYPOINT in production images
-CMD ["./event-api"]
+CMD ["./event-api", "start"]
