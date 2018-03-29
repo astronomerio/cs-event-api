@@ -4,7 +4,7 @@ GIT_COMMIT=$(shell git rev-parse HEAD)
 GIT_COMMIT_SHORT=$(shell git rev-parse --short HEAD)
 VERSION ?= SNAPSHOT-${GIT_COMMIT_SHORT}
 
-LDFLAGS_VERSION=-X github.com/astronomerio/event-api/cmd.version=${VERSION} 
+LDFLAGS_VERSION=-X github.com/astronomerio/event-api/cmd.version=${VERSION}
 LDFLAGS_GIT_COMMIT=-X github.com/astronomerio/event-api/cmd.gitCommit=${GIT_COMMIT}
 
 # Set default for make.
