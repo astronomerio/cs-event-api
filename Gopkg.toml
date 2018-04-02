@@ -56,3 +56,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/araddon/dateparse"
+
+[[constraint]]
+  name = "github.com/confluentinc/confluent-kafka-go"
+  version = "0.11.0"
