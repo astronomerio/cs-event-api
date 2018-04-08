@@ -23,7 +23,7 @@ type Broker struct {
 	BufGrow        int        `json:"buf_grow"`
 	IntLatency     IntLatency `json:"int_latency"`
 	Name           string     `json:"name"`
-	Nodeid         int        `json:"nodeid"`
+	NodeID         int        `json:"nodeid"`
 	OutbufCnt      int        `json:"outbuf_cnt"`
 	OutbufMsgCnt   int        `json:"outbuf_msg_cnt"`
 	ReqTimeouts    int        `json:"req_timeouts"`
