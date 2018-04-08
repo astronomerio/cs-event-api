@@ -8,13 +8,14 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/astronomerio/event-api/logging"
 	v1types "github.com/astronomerio/event-api/types/v1"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
 func (h *RouteHandler) batchHandler(c *gin.Context) {
-	log := h.logger.WithFields(logrus.Fields{"package": "v1"})
+	log := logging.GetLogger(logrus.Fields{"package": "v1"})
 	c.Set("method", "batch")
 
 	// Read the raw bytes from the request

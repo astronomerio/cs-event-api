@@ -38,6 +38,7 @@ services:
       EA_DEBUG_MODE: "true"
       EA_KAFKA_BROKERS: "kafka:9092"
       EA_KAFKA_TOPIC: "ingestion"
+      EA_MESSAGE_WRITER: "kafka"
     ports:
       - "8080:8080"
       - "8081:8081"

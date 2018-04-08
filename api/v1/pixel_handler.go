@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/astronomerio/event-api/logging"
 	v1types "github.com/astronomerio/event-api/types/v1"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -12,7 +13,7 @@ import (
 
 func (h *RouteHandler) pixelHandler(kind string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		log := h.logger.WithFields(logrus.Fields{"package": "v1"})
+		log := logging.GetLogger(logrus.Fields{"package": "v1"})
 		c.Set("method", "pixel")
 
 		raw, err := base64.StdEncoding.DecodeString(c.Query("data"))

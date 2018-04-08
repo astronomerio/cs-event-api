@@ -8,63 +8,48 @@ import (
 	"github.com/spf13/viper"
 )
 
+// AppConfig is the gloabl application configuration
+var AppConfig = &Configuration{}
+
 // Configuration is a stuct to hold event-api configs
 type Configuration struct {
-	APIPort               string
-	AdminPort             string
-	APIInterface          string
-	AdminInterface        string
-	GracefulShutdownDelay int
-	MessageWriter         string
-	StreamName            string
-	KafkaTopic            string
-	KafkaBrokers          []string
-	PrometheusEnabled     bool
-	HealthCheckEnabled    bool
-	PProfEnabled          bool
-	DebugMode             bool
-	LogFormat             string
+	DebugMode             bool   `mapstructure:"DEBUG_MODE"`
+	LogFormat             string `mapstructure:"LOG_FORMAT"`
+	APIPort               string `mapstructure:"API_PORT"`
+	AdminPort             string `mapstructure:"ADMIN_PORT"`
+	APIInterface          string `mapstructure:"API_INTERFACE"`
+	AdminInterface        string `mapstructure:"ADMIN_INTERFACE"`
+	GracefulShutdownDelay int    `mapstructure:"GRACEFUL_SHUTDOWN_DELAY"`
+	MessageWriter         string `mapstructure:"MESSAGE_WRITER"`
+	KafkaTopic            string `mapstructure:"KAFKA_TOPIC"`
+	KafkaBrokers          string `mapstructure:"KAFKA_BROKERS"`
+	PrometheusEnabled     bool   `mapstructure:"PROMETHEUS_ENABLED"`
+	HealthCheckEnabled    bool   `mapstructure:"HEALTHCHECK_ENABLED"`
+	PProfEnabled          bool   `mapstructure:"PPROF_ENABLED"`
 }
-
-// AppConfig is a global instance of Configuration
-var AppConfig Configuration
 
 func init() {
-	viper.SetConfigName("config")
-	viper.AddConfigPath(".")
+	appViper := viper.New()
+	appViper.SetEnvPrefix("EA")
+	appViper.AutomaticEnv()
 
-	AppConfig = Configuration{}
+	appViper.SetDefault("DEBUG_MODE", false)
+	appViper.SetDefault("LOG_FORMAT", "json")
+	appViper.SetDefault("API_PORT", "8080")
+	appViper.SetDefault("ADMIN_PORT", "8081")
+	appViper.SetDefault("API_INTERFACE", "0.0.0.0")
+	appViper.SetDefault("ADMIN_INTERFACE", "0.0.0.0")
+	appViper.SetDefault("PROMETHEUS_ENABLED", true)
+	appViper.SetDefault("HEALTHCHECK_ENABLED", true)
+	appViper.SetDefault("GRACEFUL_SHUTDOWN_DELAY", 10)
+	appViper.SetDefault("PPROF_ENABLED", false)
+	appViper.SetDefault("MESSAGE_WRITER", "")
+	appViper.SetDefault("KAFKA_BROKERS", "")
+	appViper.SetDefault("KAFKA_TOPIC", "")
 
-	setDefaults()
-	if err := viper.ReadInConfig(); err != nil {
-		log.Printf("Failed reading config file: %s\n", err)
+	if err := appViper.Unmarshal(AppConfig); err != nil {
+		log.Fatalf("Unable to decode into struct, %v", err)
 	}
-
-	viper.SetEnvPrefix("EA")
-	viper.AutomaticEnv()
-
-	if err := viper.Unmarshal(&AppConfig); err != nil {
-		log.Fatalf("unable to decode into struct, %v", err)
-	}
-}
-
-func setDefaults() {
-	viper.SetDefault("PProfEnabled", false)
-	viper.SetDefault("PrometheusEnabled", true)
-	viper.SetDefault("HealthCheckEnabled", true)
-	viper.SetDefault("GracefulShutdownDelay", 10)
-	viper.SetDefault("APIPort", "8080")
-	viper.SetDefault("AdminPort", "8081")
-	viper.SetDefault("APIInterface", "0.0.0.0")
-	viper.SetDefault("AdminInterface", "0.0.0.0")
-	viper.SetDefault("DebugMode", false)
-	viper.SetDefault("LogFormat", "json")
-	viper.SetDefault("MessageWriter", "")
-}
-
-// Get returns the config
-func Get() *Configuration {
-	return &AppConfig
 }
 
 // Print prints the configuration to stdout

@@ -1,8 +1,6 @@
 package kafka
 
 import (
-	"strings"
-
 	"github.com/astronomerio/event-api/config"
 
 	"encoding/json"
@@ -25,8 +23,6 @@ const (
 )
 
 var (
-	// Writer configuration
-	appConfig = config.Get()
 	isRunning = false
 
 	// Prometheus metrics
@@ -66,12 +62,12 @@ func init() {
 
 // NewWriter creates and returns a new Kafka Writer
 func NewWriter() *Writer {
-	log := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka"})
+	log := logging.GetLogger(logrus.Fields{"package": "kafka"})
 
 	// Set up Kafka producer config
 	// https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 	cfg := &kafka.ConfigMap{
-		"bootstrap.servers":        strings.Join(appConfig.KafkaBrokers, ","),
+		"bootstrap.servers":        config.AppConfig.KafkaBrokers,
 		"statistics.interval.ms":   500,
 		"request.required.acks":    -1,
 		"message.timeout.ms":       50000,
@@ -80,7 +76,7 @@ func NewWriter() *Writer {
 	}
 
 	// Set Kafka debugging if in DebugMode
-	if config.Get().DebugMode == true {
+	if config.AppConfig.DebugMode == true {
 		cfg.SetKey("debug", "protocol,topic,msg")
 	}
 
@@ -93,13 +89,13 @@ func NewWriter() *Writer {
 	// Create and return a new Kafka Writer
 	return &Writer{
 		producer: producer,
-		topic:    appConfig.KafkaTopic,
+		topic:    config.AppConfig.KafkaTopic,
 	}
 }
 
 // Start initializes the kafka event listener
 func (h *Writer) Start() error {
-	log := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka"})
+	log := logging.GetLogger(logrus.Fields{"package": "kafka"})
 
 	go func() {
 		// Set our running flag
@@ -156,7 +152,7 @@ func (h *Writer) Start() error {
 
 // ProcessMessage writes a given message to a given topic in the kafka cluster
 func (h *Writer) ProcessMessage(message, partition string) {
-	log := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka"})
+	log := logging.GetLogger(logrus.Fields{"package": "kafka"})
 
 	// Create message
 	msg := &kafka.Message{
@@ -183,7 +179,7 @@ func (h *Writer) ProcessMessage(message, partition string) {
 
 // Shutdown cleans up the Kafka Writer
 func (h *Writer) Shutdown() error {
-	log := logging.GetLogger().WithFields(logrus.Fields{"package": "kafka"})
+	log := logging.GetLogger(logrus.Fields{"package": "kafka"})
 	log.Info("Shutting down Kafka Writer")
 
 	// Defer close until function exists

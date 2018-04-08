@@ -100,7 +100,7 @@ func (s *Server) WithRequestID() *Server {
 
 // Run starts the http server(s) and then listens for the shutdown signal
 func (s *Server) Run() {
-	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "api", "function": "Run"})
+	log := logging.GetLogger(logrus.Fields{"package": "api"})
 
 	if os.ExpandEnv("GIN_MODE") == gin.ReleaseMode {
 		gin.DisableConsoleColor()
@@ -113,7 +113,6 @@ func (s *Server) Run() {
 
 	handlerConfig := &routes.RouteHandlerConfig{
 		MessageWriter: s.config.MessageWriter,
-		Logger:        logging.GetLogger(),
 	}
 
 	handlerConfig.MessageWriter.Start()
@@ -125,7 +124,7 @@ func (s *Server) Run() {
 
 	// Start admin server
 	if s.shouldStartAdminServer {
-		logger.Info("Starting administrative server")
+		log.Info("Starting administrative server")
 
 		s.adminHTTPServer = &http.Server{
 			Addr:    s.config.AdminInterface + ":" + s.config.AdminPort,
@@ -134,7 +133,7 @@ func (s *Server) Run() {
 
 		go func() {
 			if err := s.adminHTTPServer.ListenAndServe(); err != nil {
-				logger.Fatalf("Listen adminHTTPServer: %s\n", err)
+				log.Fatalf("Listen adminHTTPServer: %s\n", err)
 			}
 		}()
 	}
@@ -142,7 +141,7 @@ func (s *Server) Run() {
 	// Start events server
 	go func() {
 		if err := s.httpServer.ListenAndServe(); err != nil {
-			logger.Fatalf("listen httpserver: %s\n", err)
+			log.Fatalf("listen httpserver: %s\n", err)
 		}
 	}()
 
@@ -157,35 +156,35 @@ func (s *Server) Run() {
 		syscall.SIGINT,
 		syscall.SIGKILL)
 
-	logger.Info(<-c)
+	log.Info(<-c)
 	s.stop(handlerConfig.MessageWriter)
 	os.Exit(1)
 }
 
 func (s *Server) stop(writer ingestion.MessageWriter) {
-	logger := logging.GetLogger().WithFields(logrus.Fields{"package": "api", "function": "stop"})
-	logger.Info("Shutdown signal received. Gracefully shutting down...")
+	log := logging.GetLogger(logrus.Fields{"package": "api"})
+	log.Info("Shutdown signal received. Gracefully shutting down...")
 	s.SetUnhealthy()
 	sleepDuration := time.Duration(s.config.GracefulShutdownDelay) * time.Second
 
-	logger.Infof("Sleeping for %s...", sleepDuration.String())
+	log.Infof("Sleeping for %s...", sleepDuration.String())
 	time.Sleep(sleepDuration)
 
 	err := writer.Shutdown()
 	if err != nil {
-		logger.Errorf("error shutting down ingestion handler %s", err.Error())
+		log.Errorf("error shutting down ingestion handler %s", err.Error())
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := s.httpServer.Shutdown(ctx); err != nil {
-		logger.Errorf("server shutdown: %s", err.Error())
+		log.Errorf("server shutdown: %s", err.Error())
 	}
 
 	if s.shouldStartAdminServer {
 		if err := s.adminHTTPServer.Shutdown(ctx); err != nil {
-			logger.Errorf("admin http server shutdown: %s", err.Error())
+			log.Errorf("admin http server shutdown: %s", err.Error())
 		}
 	}
 

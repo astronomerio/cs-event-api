@@ -21,21 +21,20 @@ func init() {
 }
 
 func start(cmd *cobra.Command, args []string) {
-	log := logging.GetLogger().WithFields(logrus.Fields{"package": "cmd"})
+	log := logging.GetLogger(logrus.Fields{"package": "cmd"})
 
 	// Create main server object
 	apiServer := api.NewServer()
 
 	// Grab and print application config
-	appConfig := config.Get()
-	appConfig.Print()
+	config.AppConfig.Print()
 
 	// Create a server config
 	apiServerConfig := &api.ServerConfig{
-		APIPort:               appConfig.APIPort,
-		AdminPort:             appConfig.AdminPort,
-		MessageWriter:         ingestion.NewMessageWriter(appConfig.MessageWriter),
-		GracefulShutdownDelay: appConfig.GracefulShutdownDelay,
+		APIPort:               config.AppConfig.APIPort,
+		AdminPort:             config.AppConfig.AdminPort,
+		MessageWriter:         ingestion.NewMessageWriter(config.AppConfig.MessageWriter),
+		GracefulShutdownDelay: config.AppConfig.GracefulShutdownDelay,
 	}
 
 	// Set up our server options
@@ -44,15 +43,15 @@ func start(cmd *cobra.Command, args []string) {
 		WithDefaultRoutes().
 		WithRequestID()
 
-	if appConfig.HealthCheckEnabled {
+	if config.AppConfig.HealthCheckEnabled {
 		apiServer.WithHealthCheck()
 	}
 
-	if appConfig.PrometheusEnabled {
+	if config.AppConfig.PrometheusEnabled {
 		apiServer.WithPrometheusMonitoring()
 	}
 
-	if appConfig.PProfEnabled {
+	if config.AppConfig.PProfEnabled {
 		apiServer.WithPProf()
 	}
 
