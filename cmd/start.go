@@ -1,7 +1,13 @@
 package cmd
 
 import (
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+
 	"github.com/astronomerio/event-api/api"
+	"github.com/astronomerio/event-api/api/v1"
 	"github.com/astronomerio/event-api/config"
 	"github.com/astronomerio/event-api/ingestion"
 	"github.com/astronomerio/event-api/logging"
@@ -22,39 +28,51 @@ func init() {
 
 func start(cmd *cobra.Command, args []string) {
 	log := logging.GetLogger(logrus.Fields{"package": "cmd"})
-
-	// Create main server object
-	apiServer := api.NewServer()
-
-	// Grab and print application config
 	config.AppConfig.Print()
 
-	// Create a server config
-	apiServerConfig := &api.ServerConfig{
-		APIPort:               config.AppConfig.APIPort,
-		AdminPort:             config.AppConfig.AdminPort,
-		MessageWriter:         ingestion.NewMessageWriter(config.AppConfig.MessageWriter),
-		GracefulShutdownDelay: config.AppConfig.GracefulShutdownDelay,
-	}
+	// Create a waitgroup to ensure a clean shutdown.
+	var wg sync.WaitGroup
 
-	// Set up our server options
-	apiServer.
-		WithConfig(apiServerConfig).
-		WithDefaultRoutes().
-		WithRequestID()
+	// Listen for system signals to shutdown and close our shutdown channel
+	shutdownChan := make(chan struct{})
+	go func() {
+		sc := make(chan os.Signal)
+		signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, syscall.SIGSTOP)
+		<-sc
+		close(shutdownChan)
+	}()
 
-	if config.AppConfig.HealthCheckEnabled {
-		apiServer.WithHealthCheck()
-	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 
-	if config.AppConfig.PrometheusEnabled {
-		apiServer.WithPrometheusMonitoring()
-	}
+		// Create a server config
+		apiServerConfig := &api.ServerConfig{
+			APIPort:               config.AppConfig.APIPort,
+			AdminPort:             config.AppConfig.AdminPort,
+			GracefulShutdownDelay: config.AppConfig.GracefulShutdownDelay,
+		}
 
-	if config.AppConfig.PProfEnabled {
-		apiServer.WithPProf()
-	}
+		// Create the producer
+		producer := ingestion.NewMessageWriter(config.AppConfig.MessageWriter)
+		defer producer.Close()
 
-	log.Info("Starting API server")
-	apiServer.Run()
+		// Create main server object
+		apiServer := api.NewServer(apiServerConfig).
+			WithRouteHandler(v1.NewRouteHandler(producer))
+		defer apiServer.Close()
+
+		if config.AppConfig.PrometheusEnabled {
+			apiServer.WithPrometheusMonitoring()
+		}
+
+		if config.AppConfig.PProfEnabled {
+			apiServer.WithPProf()
+		}
+
+		apiServer.Serve(shutdownChan)
+	}()
+
+	wg.Wait()
+	log.Info("Finished")
 }

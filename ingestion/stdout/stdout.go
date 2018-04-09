@@ -1,6 +1,10 @@
 package stdout
 
-import "fmt"
+import (
+	"github.com/astronomerio/event-api/logging"
+	v1types "github.com/astronomerio/event-api/types/v1"
+	"github.com/sirupsen/logrus"
+)
 
 // Writer simply pipes input to stdout
 type Writer struct{}
@@ -10,17 +14,15 @@ func NewWriter() *Writer {
 	return &Writer{}
 }
 
-// Start starts the handler
-func (h *Writer) Start() error {
+// Write prints the message to stdout
+func (h *Writer) Write(ev v1types.Message) error {
+	log := logging.GetLogger(logrus.Fields{"package": "stdout"})
+	log.Infof("%s ==> %s\n", ev.String(), ev.GetMessageID())
 	return nil
 }
 
-// ProcessMessage prints the message to stdout
-func (h *Writer) ProcessMessage(message, partition string) {
-	fmt.Printf("%s ==> %s\n", message, partition)
-}
-
-// Shutdown the handler
-func (h *Writer) Shutdown() error {
-	return nil
+// Close the handler
+func (h *Writer) Close() {
+	log := logging.GetLogger(logrus.Fields{"package": "stdout"})
+	log.Info("Producer is closed")
 }

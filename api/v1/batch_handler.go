@@ -96,7 +96,7 @@ func (h *RouteHandler) batchHandler(c *gin.Context) {
 		}
 
 		// Pass the msg along to the adapter
-		h.ingestionHandler.ProcessMessage(msg.String(), msg.GetMessageID())
+		h.ingestionHandler.Write(msg)
 	}
 
 	// Set additional metric data

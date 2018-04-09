@@ -4,9 +4,9 @@ import (
 	"github.com/astronomerio/event-api/config"
 
 	"encoding/json"
-	"fmt"
 
 	"github.com/astronomerio/event-api/logging"
+	v1types "github.com/astronomerio/event-api/types/v1"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -23,8 +23,6 @@ const (
 )
 
 var (
-	isRunning = false
-
 	// Prometheus metrics
 	txBytes = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "kafka_producer_tx_bytes_total",
@@ -87,109 +85,89 @@ func NewWriter() *Writer {
 	}
 
 	// Create and return a new Kafka Writer
-	return &Writer{
+	writer := &Writer{
 		producer: producer,
 		topic:    config.AppConfig.KafkaTopic,
 	}
+
+	// Fork off to handle Kafka events
+	go writer.handleEvents()
+
+	// Return the Kafka Writer
+	return writer
 }
 
-// Start initializes the kafka event listener
-func (h *Writer) Start() error {
-	log := logging.GetLogger(logrus.Fields{"package": "kafka"})
-
-	go func() {
-		// Set our running flag
-		isRunning = true
-
-		// When this function ends, set our flag back to false
-		defer func() {
-			isRunning = false
-		}()
-
-		// Loop over events
-		for e := range h.producer.Events() {
-			switch ev := e.(type) {
-
-			// Delivery reports
-			case *kafka.Message:
-				if ev.TopicPartition.Error != nil {
-					log.Errorf("Delivery failed: %v", ev.TopicPartition.Error)
-				} else {
-					log.Debugf("Delivered message to %v\n", ev.TopicPartition)
-				}
-
-			// Stats updates
-			case *kafka.Stats:
-				// Unmarshal Stats object
-				var stats Stats
-				err := json.Unmarshal([]byte(e.String()), &stats)
-				if err != nil {
-					log.Errorf("Error unmarshalling Kafka Stats: %s", err)
-				}
-
-				// Loop over brokers
-				for _, v := range stats.Brokers {
-					// Create common labels
-					lbls := prometheus.Labels{"broker": v.Name, "producer": "event-api"}
-
-					// Record metrics
-					txBytes.With(lbls).Set(float64(v.Txbytes)) // Total bytes sent to broker
-					rxBytes.With(lbls).Set(float64(v.Rxbytes)) // Total bytes received by broker
-					txRequests.With(lbls).Set(float64(v.Tx))   // Total requests sent
-					rxResponses.With(lbls).Set(float64(v.Rx))  // Total responses received
-					latency.With(lbls).Set(float64(v.Rtt.Avg)) // Avg roundtrip to broker
-				}
-
-			// Unknown message type
-			default:
-				log.Debugf("Received unknown event in %s\n", ev)
-			}
-		}
-	}()
-
-	return nil
-}
-
-// ProcessMessage writes a given message to a given topic in the kafka cluster
-func (h *Writer) ProcessMessage(message, partition string) {
-	log := logging.GetLogger(logrus.Fields{"package": "kafka"})
+// Write writes a given event to a configured topic in the kafka cluster
+func (h *Writer) Write(ev v1types.Message) error {
+	// log := logging.GetLogger(logrus.Fields{"package": "kafka"})
 
 	// Create message
-	msg := &kafka.Message{
+	h.producer.ProduceChannel() <- &kafka.Message{
 		TopicPartition: kafka.TopicPartition{
 			Topic:     &h.topic,
 			Partition: kafka.PartitionAny,
 		},
-		Key:   []byte(partition),
-		Value: []byte(message),
+		Key:   []byte(ev.GetMessageID()),
+		Value: []byte(ev.String()),
 	}
 
-	// Skip if we don't have a producer running
-	if isRunning != true {
-		log.Error("Event listener isn't active")
-		return
-	}
+	return nil
+}
 
-	// Produce the events
-	err := h.producer.Produce(msg, h.producer.Events())
-	if err != nil {
-		log.Errorf("Unable to produce %f", err.Error())
+func (h *Writer) handleEvents() {
+	log := logging.GetLogger(logrus.Fields{"package": "kafka"})
+
+	// Loop over events
+	for e := range h.producer.Events() {
+		switch ev := e.(type) {
+
+		// Delivery reports
+		case *kafka.Message:
+			if ev.TopicPartition.Error != nil {
+				log.Errorf("Delivery failed: %v", ev.TopicPartition.Error)
+			} else {
+				log.Debugf("Delivered message to %v\n", ev.TopicPartition)
+			}
+
+		// Stats updates
+		case *kafka.Stats:
+			// Unmarshal Stats object
+			var stats Stats
+			err := json.Unmarshal([]byte(e.String()), &stats)
+			if err != nil {
+				log.Errorf("Error unmarshalling Kafka Stats: %s", err)
+			}
+
+			// Loop over brokers
+			for _, v := range stats.Brokers {
+				// Create common labels
+				lbls := prometheus.Labels{"broker": v.Name, "producer": "event-api"}
+
+				// Record metrics
+				txBytes.With(lbls).Set(float64(v.Txbytes)) // Total bytes sent to broker
+				rxBytes.With(lbls).Set(float64(v.Rxbytes)) // Total bytes received by broker
+				txRequests.With(lbls).Set(float64(v.Tx))   // Total requests sent
+				rxResponses.With(lbls).Set(float64(v.Rx))  // Total responses received
+				latency.With(lbls).Set(float64(v.Rtt.Avg)) // Avg roundtrip to broker
+			}
+		}
 	}
 }
 
 // Shutdown cleans up the Kafka Writer
-func (h *Writer) Shutdown() error {
+func (h *Writer) Close() {
 	log := logging.GetLogger(logrus.Fields{"package": "kafka"})
-	log.Info("Shutting down Kafka Writer")
-
-	// Defer close until function exists
-	defer h.producer.Close()
+	log.Info("Shutting down producer")
 
 	// Flush any remaining messages, waiting up until the flushTimeout
 	msgs := h.producer.Flush(flushTimeout)
-	if len(h.producer.ProduceChannel()) != 0 {
-		return fmt.Errorf("%d messages were not flushed after a timeout of %d", msgs, flushTimeout)
+	if msgs != 0 {
+		log.Errorf("Failed to flush %d messages after %d ms", msgs, flushTimeout)
+	} else {
+		log.Info("All messages have been flushed")
 	}
 
-	return nil
+	// Defer close until function exists
+	h.producer.Close()
+	log.Info("Producer has been closed")
 }

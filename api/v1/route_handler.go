@@ -1,29 +1,27 @@
 package v1
 
 import (
-	"github.com/astronomerio/event-api/api/routes"
 	"github.com/astronomerio/event-api/ingestion"
 	"github.com/gin-contrib/size"
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
 // RouteHandler contains all event API endpoints
 type RouteHandler struct {
 	ingestionHandler ingestion.MessageWriter
-	logger           *logrus.Logger
+	// logger           *logrus.Logger
 }
 
 // NewRouteHandler returns a new RouteHandler
-func NewRouteHandler() *RouteHandler {
-	return &RouteHandler{}
+func NewRouteHandler(writer ingestion.MessageWriter) *RouteHandler {
+	return &RouteHandler{ingestionHandler: writer}
 }
 
 // WithConfig applies a given config
-func (h *RouteHandler) WithConfig(config *routes.RouteHandlerConfig) {
-	h.ingestionHandler = config.MessageWriter
-	h.logger = config.Logger
-}
+// func (h *RouteHandler) WithConfig(config *routes.RouteHandlerConfig) {
+// 	h.ingestionHandler = config.MessageWriter
+// 	h.logger = config.Logger
+// }
 
 // Register registers the event handlers on the given router
 func (h *RouteHandler) Register(router *gin.Engine) {

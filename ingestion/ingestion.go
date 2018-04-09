@@ -3,13 +3,13 @@ package ingestion
 import (
 	"github.com/astronomerio/event-api/ingestion/kafka"
 	"github.com/astronomerio/event-api/ingestion/stdout"
+	v1types "github.com/astronomerio/event-api/types/v1"
 )
 
 // MessageWriter is an abstract handler that should pipe events to their next destination
 type MessageWriter interface {
-	Start() error
-	ProcessMessage(string, string)
-	Shutdown() error
+	Write(v1types.Message) error
+	Close()
 }
 
 // NewMessageWriter reads application configuration and returns a new MessageWriter
