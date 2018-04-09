@@ -154,7 +154,7 @@ func (h *Writer) handleEvents() {
 	}
 }
 
-// Shutdown cleans up the Kafka Writer
+// Close cleans up the Kafka Writer
 func (h *Writer) Close() {
 	log := logging.GetLogger(logrus.Fields{"package": "kafka"})
 	log.Info("Shutting down producer")
