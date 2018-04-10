@@ -1,4 +1,4 @@
-package stdout
+package ingestion
 
 import (
 	"github.com/astronomerio/event-api/logging"
@@ -9,8 +9,8 @@ import (
 // Writer simply pipes input to stdout
 type Writer struct{}
 
-// NewWriter returns a new Writer
-func NewWriter() *Writer {
+// NewDefaultWriter returns a new Writer
+func NewDefaultWriter() *Writer {
 	return &Writer{}
 }
 

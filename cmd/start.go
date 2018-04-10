@@ -39,6 +39,7 @@ func start(cmd *cobra.Command, args []string) {
 		sc := make(chan os.Signal)
 		signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, syscall.SIGSTOP)
 		<-sc
+		log.Info("Initiating shutdown sequence")
 		close(shutdownChan)
 	}()
 

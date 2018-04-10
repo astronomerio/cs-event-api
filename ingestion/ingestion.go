@@ -2,7 +2,6 @@ package ingestion
 
 import (
 	"github.com/astronomerio/event-api/ingestion/kafka"
-	"github.com/astronomerio/event-api/ingestion/stdout"
 	v1types "github.com/astronomerio/event-api/types/v1"
 )
 
@@ -14,10 +13,8 @@ type MessageWriter interface {
 
 // NewMessageWriter reads application configuration and returns a new MessageWriter
 func NewMessageWriter(kind string) MessageWriter {
-	switch kind {
-	case "kafka":
+	if kind == "kafka" {
 		return kafka.NewWriter()
-	default:
-		return stdout.NewWriter()
 	}
+	return NewDefaultWriter()
 }
