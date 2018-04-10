@@ -1,4 +1,4 @@
-package routes
+package api
 
 import (
 	"github.com/astronomerio/event-api/ingestion"

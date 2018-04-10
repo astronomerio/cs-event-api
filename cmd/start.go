@@ -60,11 +60,12 @@ func start(cmd *cobra.Command, args []string) {
 
 		// Create main server object
 		apiServer := api.NewServer(apiServerConfig).
+			WithRequestID().
 			WithRouteHandler(v1.NewRouteHandler(producer))
 		defer apiServer.Close()
 
 		if config.AppConfig.PrometheusEnabled {
-			apiServer.WithPrometheusMonitoring()
+			apiServer.WithPrometheus()
 		}
 
 		if config.AppConfig.PProfEnabled {

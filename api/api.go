@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/astronomerio/event-api/api/prometheus"
-	"github.com/astronomerio/event-api/api/routes"
+	requestId "github.com/astronomerio/event-api/api/request-id"
 	"github.com/gin-contrib/pprof"
 
 	"github.com/astronomerio/event-api/logging"
@@ -17,7 +17,7 @@ import (
 
 // Server represents this server
 type Server struct {
-	handlers    []routes.RouteHandler
+	handlers    []RouteHandler
 	server      *http.Server
 	router      *gin.Engine
 	adminServer *http.Server
@@ -63,7 +63,7 @@ func NewServer(config *ServerConfig) *Server {
 }
 
 // WithRouteHandler appends a new RouteHandler
-func (s *Server) WithRouteHandler(rh routes.RouteHandler) *Server {
+func (s *Server) WithRouteHandler(rh RouteHandler) *Server {
 	s.handlers = append(s.handlers, rh)
 	return s
 }
@@ -74,9 +74,16 @@ func (s *Server) WithPProf() *Server {
 	return s
 }
 
-// WithPrometheusMonitoring injects a middleware handler that will hook into the prometheus client
-func (s *Server) WithPrometheusMonitoring() *Server {
-	prometheus.Register(s.adminRouter, s.router)
+// WithPrometheus injects a middleware handler that will hook into the prometheus client
+func (s *Server) WithPrometheus() *Server {
+	prometheus.Register(s.adminRouter)
+	s.router.Use(prometheus.Middleware())
+	return s
+}
+
+// WithRequestID injects a request-id header
+func (s *Server) WithRequestID() *Server {
+	s.router.Use(requestId.Middleware())
 	return s
 }
 
@@ -88,7 +95,6 @@ func (s *Server) Serve(shutdownChan <-chan struct{}) {
 		gin.DisableConsoleColor()
 	}
 
-	s.router.Use(RequestIDMiddleware())
 	for _, handler := range s.handlers {
 		handler.Register(s.router)
 	}

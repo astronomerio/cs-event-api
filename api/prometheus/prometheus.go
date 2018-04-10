@@ -46,40 +46,39 @@ func init() {
 	prometheus.MustRegister(requestDuration)
 }
 
-// Register applies the route for prometheus scraping and applies the middleware function
-// for profiling
-func Register(router, middlewareRouter *gin.Engine) {
-	// Register the /metrics route
+// Register applies the route for prometheus scraping and applies the middleware function for profiling
+func Register(router *gin.Engine) {
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
-	// Set up our middleware
-	middlewareRouter.Use(middleware)
 }
 
-func middleware(ctx *gin.Context) {
-	// Grab the current time
-	start := time.Now()
+// Middleware returns a gin middleware that tracks metrics
+func Middleware() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		// Grab the current time
+		start := time.Now()
 
-	// Run the rest of the request
-	ctx.Next()
+		// Run the rest of the request
+		ctx.Next()
 
-	// Grab the values that were set in the handlers
-	m := ctx.GetString("method")
-	a := ctx.GetString("action")
-	ec := ctx.GetInt("event_count")
-	er := ctx.GetString("error")
+		// Grab the values that were set in the handlers
+		m := ctx.GetString("method")
+		a := ctx.GetString("action")
+		ec := ctx.GetInt("event_count")
+		er := ctx.GetString("error")
 
-	// Bail if no method
-	if len(m) == 0 {
-		return
+		// Bail if no method
+		if len(m) == 0 {
+			return
+		}
+
+		// Increment errors if there was an error
+		if len(er) > 0 {
+			errorCounter.WithLabelValues(m, a).Inc()
+		}
+
+		// Update metrics
+		requestCounter.WithLabelValues(m).Inc()
+		eventCounter.WithLabelValues(m).Add(float64(ec))
+		requestDuration.WithLabelValues(m).Observe(time.Since(start).Seconds())
 	}
-
-	// Increment errors if there was an error
-	if len(er) > 0 {
-		errorCounter.WithLabelValues(m, a).Inc()
-	}
-
-	// Update metrics
-	requestCounter.WithLabelValues(m).Inc()
-	eventCounter.WithLabelValues(m).Add(float64(ec))
-	requestDuration.WithLabelValues(m).Observe(time.Since(start).Seconds())
 }
