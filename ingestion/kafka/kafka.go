@@ -18,10 +18,6 @@ type Writer struct {
 	topic    string
 }
 
-const (
-	flushTimeout = 10000
-)
-
 var (
 	// Prometheus metrics
 	txBytes = prometheus.NewGaugeVec(prometheus.GaugeOpts{
@@ -160,9 +156,9 @@ func (h *Writer) Close() {
 	log.Info("Shutting down producer")
 
 	// Flush any remaining messages, waiting up until the flushTimeout
-	msgs := h.producer.Flush(flushTimeout)
+	msgs := h.producer.Flush(config.AppConfig.FlushTimeout)
 	if msgs != 0 {
-		log.Errorf("Failed to flush %d messages after %d ms", msgs, flushTimeout)
+		log.Errorf("Failed to flush %d messages after %d ms", msgs, config.AppConfig.FlushTimeout)
 	} else {
 		log.Info("All messages have been flushed")
 	}

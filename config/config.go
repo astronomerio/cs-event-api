@@ -26,6 +26,7 @@ type Configuration struct {
 	PrometheusEnabled     bool   `mapstructure:"PROMETHEUS_ENABLED"`
 	HealthCheckEnabled    bool   `mapstructure:"HEALTHCHECK_ENABLED"`
 	PProfEnabled          bool   `mapstructure:"PPROF_ENABLED"`
+	FlushTimeout          int    `mapstructure:"FLUSH_TIMEOUT"`
 }
 
 func init() {
@@ -46,6 +47,7 @@ func init() {
 	appViper.SetDefault("MESSAGE_WRITER", "")
 	appViper.SetDefault("KAFKA_BROKERS", "")
 	appViper.SetDefault("KAFKA_TOPIC", "")
+	appViper.SetDefault("FLUSH_TIMEOUT", 10000)
 
 	if err := appViper.Unmarshal(AppConfig); err != nil {
 		log.Fatalf("Unable to decode into struct, %v", err)
