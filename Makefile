@@ -1,28 +1,33 @@
-IMAGE_NAME ?= astronomerio/event-api
+IMAGE_NAME ?= astronomerinc/ap-event-api
 
-GIT_COMMIT=$(shell git rev-parse --short HEAD)
-GIT_DIRTY=$(shell test -n "`git status --porcelain`" && echo "+CHANGES" || true)
-GIT_DESCRIBE=$(shell git describe --tags --always)
-GIT_IMPORT=github.com/astronomerio/event-api/pkg/version
-GOLDFLAGS=-X $(GIT_IMPORT).GitCommit=$(GIT_COMMIT)$(GIT_DIRTY) -X $(GIT_IMPORT).GitDescribe=$(GIT_DESCRIBE)
+GIT_COMMIT=$(shell git rev-parse HEAD)
+GIT_COMMIT_SHORT=$(shell git rev-parse --short HEAD)
+VERSION ?= SNAPSHOT-${GIT_COMMIT_SHORT}
 
-VERSION ?= SNAPSHOT-$(GIT_COMMIT)
+LDFLAGS_VERSION=-X github.com/astronomerio/event-api/cmd.version=${VERSION}
+LDFLAGS_GIT_COMMIT=-X github.com/astronomerio/event-api/cmd.gitCommit=${GIT_COMMIT}
 
+# Set default for make.
+.DEFAULT_GOAL := build-image
+
+.PHONY: build
 build:
-	go build -ldflags '$(GOLDFLAGS)' -tags static -o event-api main.go
+	go build -ldflags "${LDFLAGS_VERSION} ${LDFLAGS_GIT_COMMIT}" -tags static -o event-api main.go
 
-build-image:
-	docker build -t $(IMAGE_NAME):$(VERSION) .
-
-tag-latest:
-	docker tag $(IMAGE_NAME):$(VERSION) $(IMAGE_NAME):latest
-
-push-image:
-	docker push $(IMAGE_NAME):$(VERSION)
-
+.PHONY: install
 install: build
 	mkdir -p $(DESTDIR)
 	cp event-api $(DESTDIR)
 
+.PHONY: uninstall
 uninstall:
 	rm -rf $(DESTDIR)
+
+.PHONY: build-image
+build-image:
+	docker build -t $(IMAGE_NAME):latest .
+	docker tag $(IMAGE_NAME):latest $(IMAGE_NAME):$(VERSION)
+
+.PHONY: test-image
+test-image: build-image
+	docker run ${IMAGE_NAME}:${VERSION} go test ./...

@@ -1,0 +1,68 @@
+---
+version: "2"
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    hostname: zookeeper
+    restart: unless-stopped
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-enterprise-kafka:latest
+    hostname: kafka
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+  event-api:
+    image: astronomerinc/ap-event-api:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+    environment:
+      EA_DEBUG_MODE: "true"
+      EA_KAFKA_BROKERS: "kafka:9092"
+      EA_KAFKA_TOPIC: "ingestion"
+      EA_MESSAGE_WRITER: "kafka"
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+
+  prometheus:
+    image: astronomerinc/ap-prometheus:latest
+    command:
+      - "--config.file=/tmp/prom.yaml"
+      - "--storage.tsdb.path=/prometheus"
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prom.yaml:/tmp/prom.yaml
+
+  grafana:
+    image: astronomerinc/ap-grafana:latest
+    restart: unless-stopped
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      ASTRO_DEFAULT_PROMETHEUS_HOST: http://prometheus:9090
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./dashboard.json:/var/lib/grafana/dashboards/event-api.json
