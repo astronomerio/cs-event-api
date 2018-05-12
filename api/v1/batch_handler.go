@@ -78,21 +78,25 @@ func (h *RouteHandler) batchHandler(c *gin.Context) {
 		msg.SkewTimestamp()
 
 		// Merge batch level context to msg context
-		err := msg.MergeContext(batch.Context)
-		if err != nil {
-			action := "merge-context"
-			c.Set("action", action)
-			c.Set("error", err.Error())
-			log.WithFields(logrus.Fields{"action": action}).Error(err.Error())
+		if batch.Context != nil {
+			err := msg.MergeContext(batch.Context)
+			if err != nil {
+				action := "merge-context"
+				c.Set("action", action)
+				c.Set("error", err.Error())
+				log.WithFields(logrus.Fields{"action": action}).Error(err.Error())
+			}
 		}
 
 		// Merge batch level integrations to msg integrations
-		err = msg.MergeIntegrations(batch.Integrations)
-		if err != nil {
-			action := "merge-integrations"
-			c.Set("action", action)
-			c.Set("error", err.Error())
-			log.WithFields(logrus.Fields{"action": action}).Error(err.Error())
+		if batch.Integrations != nil {
+			err = msg.MergeIntegrations(batch.Integrations)
+			if err != nil {
+				action := "merge-integrations"
+				c.Set("action", action)
+				c.Set("error", err.Error())
+				log.WithFields(logrus.Fields{"action": action}).Error(err.Error())
+			}
 		}
 
 		// Pass the msg along to the adapter
