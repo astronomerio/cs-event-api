@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/astronomerio/event-api/ingestion"
+	"github.com/arizz96/event-api/ingestion"
 	"github.com/gin-gonic/gin"
 )
 

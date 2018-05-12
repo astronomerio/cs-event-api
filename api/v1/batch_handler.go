@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/astronomerio/event-api/logging"
-	v1types "github.com/astronomerio/event-api/types/v1"
+	"github.com/arizz96/event-api/logging"
+	v1types "github.com/arizz96/event-api/types/v1"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )

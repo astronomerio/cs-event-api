@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/astronomerio/event-api/api/prometheus"
-	requestId "github.com/astronomerio/event-api/api/request-id"
+	"github.com/arizz96/event-api/api/prometheus"
+	requestId "github.com/arizz96/event-api/api/request-id"
 	"github.com/gin-contrib/pprof"
 
-	"github.com/astronomerio/event-api/logging"
+	"github.com/arizz96/event-api/logging"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )

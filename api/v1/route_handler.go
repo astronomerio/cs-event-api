@@ -1,7 +1,7 @@
 package v1
 
 import (
-	"github.com/astronomerio/event-api/ingestion"
+	"github.com/arizz96/event-api/ingestion"
 	"github.com/gin-contrib/size"
 	"github.com/gin-gonic/gin"
 )

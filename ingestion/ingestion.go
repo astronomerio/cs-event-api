@@ -1,8 +1,8 @@
 package ingestion
 
 import (
-	"github.com/astronomerio/event-api/ingestion/kafka"
-	v1types "github.com/astronomerio/event-api/types/v1"
+	"github.com/arizz96/event-api/ingestion/kafka"
+	v1types "github.com/arizz96/event-api/types/v1"
 )
 
 // MessageWriter is an abstract handler that should pipe events to their next destination

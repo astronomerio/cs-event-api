@@ -1,12 +1,12 @@
 package kafka
 
 import (
-	"github.com/astronomerio/event-api/config"
+	"github.com/arizz96/event-api/config"
 
 	"encoding/json"
 
-	"github.com/astronomerio/event-api/logging"
-	v1types "github.com/astronomerio/event-api/types/v1"
+	"github.com/arizz96/event-api/logging"
+	v1types "github.com/arizz96/event-api/types/v1"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"

@@ -6,11 +6,11 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/astronomerio/event-api/api"
-	"github.com/astronomerio/event-api/api/v1"
-	"github.com/astronomerio/event-api/config"
-	"github.com/astronomerio/event-api/ingestion"
-	"github.com/astronomerio/event-api/logging"
+	"github.com/arizz96/event-api/api"
+	"github.com/arizz96/event-api/api/v1"
+	"github.com/arizz96/event-api/config"
+	"github.com/arizz96/event-api/ingestion"
+	"github.com/arizz96/event-api/logging"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

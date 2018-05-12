@@ -1,7 +1,7 @@
 package logging
 
 import (
-	"github.com/astronomerio/event-api/config"
+	"github.com/arizz96/event-api/config"
 	"github.com/sirupsen/logrus"
 )
 

@@ -1,7 +1,5 @@
 # event-api
 
-[![CircleCI](https://circleci.com/gh/astronomerio/event-api.svg?style=svg&circle-token=04ac38b355e4a32d61a0b286f7031adf7dab2c11)](https://circleci.com/gh/astronomerio/event-api)
-
 ## Configuraton
 The binary looks for a config file called `config.yml` in the current working directory.
 

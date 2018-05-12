@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/astronomerio/event-api/cmd"
+	"github.com/arizz96/event-api/cmd"
 )
 
 func main() {

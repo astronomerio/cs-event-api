@@ -2,7 +2,7 @@ FROM golang:alpine
 
 ARG LIBRDKAFKA_VERSION="0.11.1-r1"
 
-ENV REPO="github.com/astronomerio/event-api"
+ENV REPO="github.com/arizz96/event-api"
 WORKDIR /go/src/${REPO}
 
 RUN apk add --no-cache \
