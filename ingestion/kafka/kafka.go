@@ -65,7 +65,7 @@ func NewWriter() *Writer {
 		"statistics.interval.ms":   500,
 		"request.required.acks":    -1,
 		"message.timeout.ms":       50000,
-		"queue.buffering.max.ms":   5000,
+		"queue.buffering.max.ms":   config.AppConfig.QueueBufferingDelayMs,
 		"message.send.max.retries": 10,
 	}
 

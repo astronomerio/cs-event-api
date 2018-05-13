@@ -27,6 +27,7 @@ type Configuration struct {
 	HealthCheckEnabled    bool   `mapstructure:"HEALTHCHECK_ENABLED"`
 	PProfEnabled          bool   `mapstructure:"PPROF_ENABLED"`
 	FlushTimeout          int    `mapstructure:"FLUSH_TIMEOUT"`
+	QueueBufferingDelayMs int    `mapstructure:"QUEUE_BUFFERING_DELAY_MS"`
 }
 
 func init() {
@@ -48,6 +49,7 @@ func init() {
 	appViper.SetDefault("KAFKA_BROKERS", "")
 	appViper.SetDefault("KAFKA_TOPIC", "")
 	appViper.SetDefault("FLUSH_TIMEOUT", 10000)
+	appViper.SetDefault("QUEUE_BUFFERING_DELAY_MS", 5000)
 
 	if err := appViper.Unmarshal(AppConfig); err != nil {
 		log.Fatalf("Unable to decode into struct, %v", err)
