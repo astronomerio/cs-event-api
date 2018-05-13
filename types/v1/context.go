@@ -2,6 +2,7 @@ package v1
 
 import (
 	"net"
+	"github.com/arizz96/event-api/types"
 )
 
 // Context provides the representation of the `context` object
@@ -25,10 +26,10 @@ type Context struct {
 
 // AppInfo provides the representation of the `context.app` object
 type AppInfo struct {
-	Name      string `json:"name,omitempty"`
-	Version   string `json:"version,omitempty"`
-	Build     string `json:"build,omitempty"`
-	Namespace string `json:"namespace,omitempty"`
+	Name      string                  `json:"name,omitempty"`
+	Version   string                  `json:"version,omitempty"`
+	Build     types.ConvertibleString `json:"build,omitempty"`
+	Namespace string                  `json:"namespace,omitempty"`
 }
 
 // CampaignInfo provides the representation of the `context.campaign` object
@@ -69,10 +70,10 @@ type LocationInfo struct {
 
 // NetworkInfo provides the representation of the `context.network` object
 type NetworkInfo struct {
-	Bluetooth bool   `json:"bluetooth,omitempty"`
-	Cellular  bool   `json:"cellular,omitempty"`
-	WIFI      bool   `json:"wifi,omitempty"`
-	Carrier   string `json:"carrier,omitempty"`
+	Bluetooth types.ConvertibleBoolean `json:"bluetooth,omitempty"`
+	Cellular  types.ConvertibleBoolean `json:"cellular,omitempty"`
+	WIFI      types.ConvertibleBoolean `json:"wifi,omitempty"`
+	Carrier   string                   `json:"carrier,omitempty"`
 }
 
 // OSInfo provides the representation of the `context.os` object
