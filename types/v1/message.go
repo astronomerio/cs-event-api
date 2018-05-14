@@ -6,6 +6,8 @@ import "time"
 type Message interface {
 	GetWriteKey() string
 	GetMessageID() string
+	GetContext() *Context
+	GetIntegrations() *Integrations
 	GetType() string
 	WithSentAt(time.Time)
 	WithReceivedAt(time.Time)

@@ -27,9 +27,19 @@ func (ev *Event) GetWriteKey() string {
 	return ev.WriteKey
 }
 
-// GetMessageID returns the write key
+// GetMessageID returns the message's ID
 func (ev *Event) GetMessageID() string {
 	return ev.MessageID
+}
+
+// GetMessageID returns the message's Context
+func (ev *Event) GetContext() *Context {
+	return ev.Context
+}
+
+// GetMessageID returns the message's Integrations
+func (ev *Event) GetIntegrations() *Integrations {
+	return ev.Integrations
 }
 
 // GetType returns the write key
