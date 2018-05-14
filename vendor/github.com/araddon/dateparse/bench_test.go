@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/simplereach/timeutils"
 )
 
 /*
@@ -12,6 +14,15 @@ go test -bench Parse
 
 BenchmarkShotgunParse			50000	     37588 ns/op	   13258 B/op	     167 allocs/op
 BenchmarkDateparseParseAny		500000	      5752 ns/op	       0 B/op	       0 allocs/op
+
+// Aarons Laptop Lenovo 900 Feb 2018
+BenchmarkShotgunParse-4   	   50000	     30045 ns/op	   13136 B/op	     169 allocs/op
+BenchmarkParseAny-4       	  200000	      8627 ns/op	     144 B/op	       3 allocs/op
+
+// ifreddyrondon Laptop MacBook Pro (Retina, Mid 2012) March 2018
+BenchmarkShotgunParse-8   	   50000	     33940 ns/op	   13136 B/op	     169 allocs/op
+BenchmarkParseAny-8   	  		200000	     10146 ns/op	     912 B/op	      29 allocs/op
+BenchmarkParseDateString-8   	10000	    123077 ns/op	     208 B/op	      13 allocs/op
 
 */
 func BenchmarkShotgunParse(b *testing.B) {
@@ -29,6 +40,15 @@ func BenchmarkParseAny(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, dateStr := range testDates {
 			ParseAny(dateStr)
+		}
+	}
+}
+
+func BenchmarkParseDateString(b *testing.B) {
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		for _, dateStr := range testDates {
+			timeutils.ParseDateString(dateStr)
 		}
 	}
 }
